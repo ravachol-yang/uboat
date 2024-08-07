@@ -11,6 +11,7 @@
 #include <map>
 #include <nlohmann/json_fwd.hpp>
 #include <openssl/evp.h>
+#include <random>
 #include <sstream>
 #include <string>
 
@@ -27,8 +28,16 @@ std::expected<server::SubsonicResponse<server::Error>, server::Error>
 OSClient::authenticate() {
 
     // generate random salt
-    // TODO
-    m_salt = "test";
+    const std::string CHARACTERS =
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<size_t> distribution(0,
+                                                       CHARACTERS.size() - 1);
+    
+    for (size_t i = 0; i < 10; ++i) {
+        m_salt += CHARACTERS[distribution(gen)];
+    }
 
     // generate MD5
     auto password_salt = m_password + m_salt;
@@ -150,6 +159,7 @@ OSClient::get_req(const std::string &endpoint,
     }
 };
 
+// check the response data
 template <class Data>
 std::expected<Data, server::Error>
 OSClient::check(server::SubsonicResponse<Data> &r) const {

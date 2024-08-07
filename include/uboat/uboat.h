@@ -377,6 +377,8 @@ private:
             const std::map<std::string, std::string> &params,
             const std::string &key) const;
 
+    /// check the response data
+    /// \param r response
     template <class Data>
     std::expected<Data, server::Error>
     check(server::SubsonicResponse<Data> &r) const;
