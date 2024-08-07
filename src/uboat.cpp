@@ -65,7 +65,7 @@ OSClient::authenticate() {
         if (response.value().status == "ok") {
             return response;
         } else
-            return std::unexpected(response.value().data);
+            return std::unexpected(response.value().error);
     } else
         return std::unexpected(response.error());
 }
@@ -83,6 +83,16 @@ OSClient::ping() const {
     return response;
 }
 
+// Get details about the software license.
+std::expected<server::License, server::Error> OSClient::getLicense() const {
+    auto response = get_req<server::License>("getLicense", {}, "license");
+    if (response) {
+        return check(response.value());
+    } else {
+        return std::unexpected(response.error());
+    }
+}
+
 // Browsing
 std::expected<album::AlbumID3WithSongs, server::Error>
 OSClient::getAlbum(const std::string &id) const {
@@ -92,7 +102,6 @@ OSClient::getAlbum(const std::string &id) const {
 }
 
 // Album/song lists
-
 
 // private
 /// helper for GET requests
@@ -127,12 +136,13 @@ OSClient::get_req(const std::string &endpoint,
         json j = json::parse(r.text);
         auto response = j["subsonic-response"]
                             .template get<server::SubsonicResponse<Data>>();
-        
+
         // extract data
         if (j["subsonic-response"].contains(key)) {
             response.data = j["subsonic-response"][key].template get<Data>();
             return response;
-        } else if (response.status == "ok") {
+        } else if (response.status == "ok" ||
+                   j["subsonic-response"].contains("error")) {
             return response;
         } else {
             return std::unexpected(server::Error{500, "unknown key"});
@@ -140,10 +150,11 @@ OSClient::get_req(const std::string &endpoint,
     }
 };
 
-/// check if the responce data contains an error
-bool OSClient::check(const auto &data) const {
-    if (static_cast<json>(data)["subsonic-response"]["status"] != "ok")
-        return false;
+template <class Data>
+std::expected<Data, server::Error>
+OSClient::check(server::SubsonicResponse<Data> &r) const {
+    if (r.status == "ok")
+        return r.data;
     else
-        return true;
+        return std::unexpected(r.error);
 }

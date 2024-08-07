@@ -256,6 +256,13 @@ struct Error {
     std::string message;
 };
 
+struct License {
+    bool valid;
+    std::string email;
+    std::string licenseExpires;
+    std::string trialExpires;
+};
+
 template <class Data> struct SubsonicResponse {
     std::string status;
     std::string version;
@@ -269,8 +276,19 @@ template <class Data> struct SubsonicResponse {
 // Define types for json parsing
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Error, code, message)
 
+inline void from_json(const nlohmann::json &j, License &l) {
+    j.at("valid").get_to(l.valid);
+    if (j.contains("email"))
+        j.at("email").get_to(l.email);
+    if (j.contains("licenseExpires"))
+        j.at("licenseExpires").get_to(l.licenseExpires);
+    if (j.contains("trialExpires"))
+        j.at("trialExpires").get_to(l.trialExpires);
+}
+
+// SubsonicResponse
 template <class Data>
-void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
+inline void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
     j = nlohmann::json{{"status", s.status},
                        {"version", s.version},
                        {"type", s.type},
@@ -279,17 +297,15 @@ void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
 }
 
 template <class Data>
-void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
+inline void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
     j.at("status").get_to(s.status);
     j.at("version").get_to(s.version);
     j.at("type").get_to(s.type);
     j.at("serverVersion").get_to(s.serverVersion);
     j.at("openSubsonic").get_to(s.openSubsonic);
-    if (j.contains("error")) {
+    if (j.contains("error"))
         j.at("error").get_to(s.error);
-    }
 }
-
 } // namespace server
 
 /// OpenSubsonic Client
@@ -314,6 +330,12 @@ public:
     /// \return returns a SubsonicResponse on success
     std::expected<server::SubsonicResponse<server::Error>, server::Error>
     ping() const;
+
+    /// Get details about the software license.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getlicense/
+    /// \return A subsonic-response element with a nested license element on
+    /// success.
+    std::expected<server::License, server::Error> getLicense() const;
 
     // Browsing
 
@@ -355,10 +377,9 @@ private:
             const std::map<std::string, std::string> &params,
             const std::string &key) const;
 
-    /// check if the responce data contains an error
-    /// \param data the data to be checked in json format
-    /// \return t or f
-    bool check(const auto &data) const;
+    template <class Data>
+    std::expected<Data, server::Error>
+    check(server::SubsonicResponse<Data> &r) const;
 };
 } // namespace uboat
 
