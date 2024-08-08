@@ -5,3 +5,4 @@ macro(add_uboat_test _TEST_NAME)
 endmacro()
 
 add_uboat_test(system)
+add_uboat_test(lists)

@@ -117,11 +117,25 @@ struct DiscTitle {
     std::string title;
 };
 
+struct ReplayGain {
+    size_t trackGain;
+    size_t albumGain;
+    size_t trackPeak;
+    size_t albumPeak;
+    size_t baseGain;
+    size_t fallbackGain;
+};
+
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Genre, value, songCount, albumCount)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RecordLabel, name)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemGenre, name)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemDate, year, month, day)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DiscTitle, disc, title)
+
+// json parsers
+// ReplayGain
+void from_json(const nlohmann::json &j, ReplayGain &r);
+
 } // namespace misc
 
 namespace media {
@@ -162,8 +176,8 @@ struct Child {
     std::string type;
     std::string mediaType;
     std::size_t bookmarkPosition;
-    std::size_t originalWidth;
-    std::size_t originalHeight;
+    // std::size_t originalWidth;
+    // std::size_t originalHeight;
     std::string played;
     std::size_t bpm;
     std::string comment;
@@ -177,19 +191,43 @@ struct Child {
     // contributors
     // displayComposer
     // moods
-    // replayGain
+    misc::ReplayGain replayGain;
 };
 
-// Define types for json parsing
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Child, id, parent, isDir, title, album, artist, track, year, genre,
-    coverArt, size, contentType, suffix, transcodedContentType,
-    transcodedSuffix, duration, bitRate, bitDepth, samplingRate, channelCount,
-    path, isVideo, userRating, averageRating, playCount, discNumber, created,
-    starred, albumId, artistId, type, mediaType, bookmarkPosition,
-    originalWidth, originalHeight, played, bpm, comment, sortName,
-    musicBrainzId, genres, artists, displayArtist, albumArtists,
-    displayAlbumArtist)
+/// NowPlayingEntry extends Child (See Child documentation for the corresponding
+/// fields) https://opensubsonic.netlify.app/docs/responses/nowplayingentry/
+struct NowPlayingEntry : public Child {
+    std::string username;
+    size_t minutesAgo;
+    size_t playerId;
+    std::string playerName;
+};
+
+/// RandomSongs list.
+/// https://opensubsonic.netlify.app/docs/responses/randomsongs/
+struct RandomSongs {
+    std::vector<Child> song;
+};
+
+/// nowPlaying
+/// https://opensubsonic.netlify.app/docs/responses/nowplaying/
+struct NowPlaying {
+    std::vector<NowPlayingEntry> entry;
+};
+
+// json parser
+// Child
+void from_json(const nlohmann::json &j, Child &c);
+
+// NowPlayingEntry
+void from_json(const nlohmann::json &j, NowPlayingEntry &n);
+
+// RandomSongs
+void from_json(const nlohmann::json &j, RandomSongs &r);
+
+// NowPlaying
+void from_json(const nlohmann::json &j, NowPlaying &n);
+
 } // namespace media
 
 namespace album {
@@ -228,23 +266,16 @@ struct AlbumID3WithSongs : AlbumID3 {
     std::vector<media::Child> song;
 };
 
-// Define types for json parsing
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AlbumID3, id, name, artist, artistId,
-                                   coverArt, songCount, duration, playCount,
-                                   created, starred, year, genre, played,
-                                   userRating, recordLabels, musicBrainzId,
-                                   genres, artist, displayArtist, releaseTypes,
-                                   moods, sortName, originalReleaseDate,
-                                   releaseDate, isCompilation, discTitles)
+struct AlbumList2 {
+    std::vector<AlbumID3> album;
+};
 
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AlbumID3WithSongs, id, name, artist,
-                                   artistId, coverArt, songCount, duration,
-                                   playCount, created, starred, year, genre,
-                                   played, userRating, recordLabels,
-                                   musicBrainzId, genres, artists,
-                                   displayArtist, releaseTypes, moods, sortName,
-                                   originalReleaseDate, releaseDate,
-                                   isCompilation, discTitles, song)
+// json parsers
+// AlbumID3
+void from_json(const nlohmann::json &j, AlbumID3 &a);
+
+// AlbumList2
+void from_json(const nlohmann::json &j, AlbumList2 &a);
 } // namespace album
 
 namespace server {
@@ -276,19 +307,13 @@ template <class Data> struct SubsonicResponse {
 // Define types for json parsing
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Error, code, message)
 
-inline void from_json(const nlohmann::json &j, License &l) {
-    j.at("valid").get_to(l.valid);
-    if (j.contains("email"))
-        j.at("email").get_to(l.email);
-    if (j.contains("licenseExpires"))
-        j.at("licenseExpires").get_to(l.licenseExpires);
-    if (j.contains("trialExpires"))
-        j.at("trialExpires").get_to(l.trialExpires);
-}
+// json parsers
+// License
+void from_json(const nlohmann::json &j, License &l);
 
 // SubsonicResponse
 template <class Data>
-inline void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
+void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
     j = nlohmann::json{{"status", s.status},
                        {"version", s.version},
                        {"type", s.type},
@@ -297,15 +322,7 @@ inline void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
 }
 
 template <class Data>
-inline void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
-    j.at("status").get_to(s.status);
-    j.at("version").get_to(s.version);
-    j.at("type").get_to(s.type);
-    j.at("serverVersion").get_to(s.serverVersion);
-    j.at("openSubsonic").get_to(s.openSubsonic);
-    if (j.contains("error"))
-        j.at("error").get_to(s.error);
-}
+void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s);
 } // namespace server
 
 /// OpenSubsonic Client
@@ -342,6 +359,7 @@ public:
     /// Returns details for an album, including a list of songs. This method
     /// organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getalbum/
+    ///
     /// \param id the album id
     /// \return returns an ablum and songs on success and error on failure
     std::expected<album::AlbumID3WithSongs, server::Error>
@@ -352,9 +370,48 @@ public:
     /// Returns a list of random, newest, highest rated etc. albums.
     /// Similar to getAlbumList, but organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getalbumlist2/
-    /// \param
-    // std::expected<std::vector<album::AlbumID3>, server::Error>
-    // getAlbumList2(const std::string &type, const size_t &size) const;
+    ///
+    /// \param type The list type. Must be one of the following: random, newest,
+    /// highest, frequent, recent. Since 1.8.0 you can also use
+    /// alphabeticalByName or alphabeticalByArtist to page through all albums
+    /// alphabetically, and starred to retrieve starred albums. Since 1.10.1 you
+    /// can use byYear and byGenre to list albums in a given year range or
+    /// genre.
+    ///
+    /// \param size The number of albums to return. Max 500.
+    /// \param offset The list offset. Useful if you for example want to page
+    /// through the list of newest albums.
+    ///
+    /// \param fromYear The first year in the range.
+    /// If fromYear > toYear a reverse chronological list is returned.
+    ///
+    /// \param toYear The last year in the range.
+    /// \param genre The name of the genre, e.g., “Rock”.
+    /// \return AlbumList2 or Error
+    std::expected<album::AlbumList2, server::Error> getAlbumList2(
+        const std::string &type, const std::string &size = "",
+        const std::string &offset = "", const std::string &fromYear = "",
+        const std::string &toYear = "", const std::string &genre = "") const;
+
+    /// Returns random songs matching the given criteria.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getrandomsongs/
+    ///
+    /// \param size The maximum number of songs to return. Max 500.
+    /// \param genre Only returns songs belonging to this genre.
+    /// \param fromYear Only return songs published after or in this year.
+    /// \param toYear Only return songs published before or in this year.
+    /// \return RandomSongs or Error
+    std::expected<media::RandomSongs, server::Error>
+    getRandomSongs(const std::string &size = "", const std::string &genre = "",
+                   const std::string &fromYear = "",
+                   const std::string &toYear = "") const;
+
+    /// Returns what is currently being played by all users. Takes no extra
+    /// parameters
+    /// https://opensubsonic.netlify.app/docs/endpoints/getnowplaying/
+    ///
+    /// \return Nowplaying or Error
+    std::expected<media::NowPlaying, server::Error> getNowPlaying() const;
 
 private:
     // client information:
