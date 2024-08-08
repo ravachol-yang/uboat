@@ -228,14 +228,13 @@ struct AlbumID3WithSongs : AlbumID3 {
     std::vector<media::Child> song;
 };
 
-// Define types for json parsing
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AlbumID3, id, name, artist, artistId,
-                                   coverArt, songCount, duration, playCount,
-                                   created, starred, year, genre, played,
-                                   userRating, recordLabels, musicBrainzId,
-                                   genres, artist, displayArtist, releaseTypes,
-                                   moods, sortName, originalReleaseDate,
-                                   releaseDate, isCompilation, discTitles)
+struct AlbumList2 {
+    std::vector<AlbumID3> album;
+};
+
+// json parsers
+// AlbumID3
+void from_json(const nlohmann::json &j, AlbumID3 &a);
 
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AlbumID3WithSongs, id, name, artist,
                                    artistId, coverArt, songCount, duration,
@@ -245,6 +244,9 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AlbumID3WithSongs, id, name, artist,
                                    displayArtist, releaseTypes, moods, sortName,
                                    originalReleaseDate, releaseDate,
                                    isCompilation, discTitles, song)
+
+// AlbumList2
+void from_json(const nlohmann::json &j, AlbumList2 &a);
 } // namespace album
 
 namespace server {
@@ -276,19 +278,13 @@ template <class Data> struct SubsonicResponse {
 // Define types for json parsing
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Error, code, message)
 
-inline void from_json(const nlohmann::json &j, License &l) {
-    j.at("valid").get_to(l.valid);
-    if (j.contains("email"))
-        j.at("email").get_to(l.email);
-    if (j.contains("licenseExpires"))
-        j.at("licenseExpires").get_to(l.licenseExpires);
-    if (j.contains("trialExpires"))
-        j.at("trialExpires").get_to(l.trialExpires);
-}
+// json parsers
+// License
+void from_json(const nlohmann::json &j, License &l);
 
 // SubsonicResponse
 template <class Data>
-inline void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
+void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
     j = nlohmann::json{{"status", s.status},
                        {"version", s.version},
                        {"type", s.type},
@@ -297,15 +293,7 @@ inline void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
 }
 
 template <class Data>
-inline void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
-    j.at("status").get_to(s.status);
-    j.at("version").get_to(s.version);
-    j.at("type").get_to(s.type);
-    j.at("serverVersion").get_to(s.serverVersion);
-    j.at("openSubsonic").get_to(s.openSubsonic);
-    if (j.contains("error"))
-        j.at("error").get_to(s.error);
-}
+void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s);
 } // namespace server
 
 /// OpenSubsonic Client
@@ -353,8 +341,11 @@ public:
     /// Similar to getAlbumList, but organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getalbumlist2/
     /// \param
-    // std::expected<std::vector<album::AlbumID3>, server::Error>
-    // getAlbumList2(const std::string &type, const size_t &size) const;
+    std::expected<album::AlbumList2, server::Error>
+    getAlbumList2(const std::string &type, const size_t &size = 10,
+                  const size_t &offset = 0, const size_t &fromYear = 0,
+                  const size_t &toYear = 0,
+                  const std::string &genre = "") const;
 
 private:
     // client information:

@@ -34,7 +34,7 @@ OSClient::authenticate() {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<size_t> distribution(0,
                                                        CHARACTERS.size() - 1);
-    
+
     for (size_t i = 0; i < 10; ++i) {
         m_salt += CHARACTERS[distribution(gen)];
     }
@@ -111,6 +111,34 @@ OSClient::getAlbum(const std::string &id) const {
 }
 
 // Album/song lists
+std::expected<album::AlbumList2, server::Error>
+OSClient::getAlbumList2(const std::string &type, const size_t &size,
+                        const size_t &offset, const size_t &fromYear,
+                        const size_t &toYear, const std::string &genre) const {
+
+    // make parameters
+    std::map<std::string, std::string> params{
+        {"type", type},
+        {"size", std::to_string(size)},
+        {"offset", std::to_string(offset)}};
+
+    // add optional params
+    if (type == "byYear")
+        params.insert({{"fromYear", std::to_string(fromYear)},
+                       {"toYear", std::to_string(toYear)}});
+    else if (type == "byGenre")
+        params.insert({{"genre", genre}});
+
+    // get response
+    auto response =
+        get_req<album::AlbumList2>("getAlbumList2", params, "albumList2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
 
 // private
 /// helper for GET requests
@@ -168,3 +196,110 @@ OSClient::check(server::SubsonicResponse<Data> &r) const {
     else
         return std::unexpected(r.error);
 }
+
+namespace uboat::album {
+// json parsers
+// AlbumID3
+void from_json(const nlohmann::json &j, AlbumID3 &a) {
+    j.at("id").get_to(a.id);
+    j.at("name").get_to(a.name);
+
+    if (j.contains("artist"))
+        j.at("artist").get_to(a.artist);
+
+    if (j.contains("artistId"))
+        j.at("artistId").get_to(a.artistId);
+
+    if (j.contains("coverArt"))
+        j.at("coverArt").get_to(a.coverArt);
+
+    j.at("songCount").get_to(a.songCount);
+    j.at("duration").get_to(a.duration);
+
+    if (j.contains("playCount"))
+        j.at("playCount").get_to(a.playCount);
+
+    j.at("created").get_to(a.created);
+
+    if (j.contains("starred"))
+        j.at("starred").get_to(a.starred);
+
+    if (j.contains("year"))
+        j.at("year").get_to(a.year);
+
+    if (j.contains("played"))
+        j.at("played").get_to(a.played);
+
+    if (j.contains("userRating"))
+        j.at("userRating").get_to(a.userRating);
+
+    if (j.contains("recordLabels"))
+        j.at("recordLabels").get_to(a.recordLabels);
+
+    if (j.contains("musicBrainzId"))
+        j.at("musicBrainzId").get_to(a.musicBrainzId);
+
+    if (j.contains("genres"))
+        j.at("genres").get_to(a.genres);
+
+    if (j.contains("artists"))
+        j.at("artists").get_to(a.artists);
+
+    if (j.contains("displayArtist"))
+        j.at("displayArtist").get_to(a.displayArtist);
+
+    if (j.contains("releaseTypes"))
+        j.at("releaseTypes").get_to(a.releaseTypes);
+
+    if (j.contains("moods"))
+        j.at("moods").get_to(a.moods);
+
+    if (j.contains("sortNames"))
+        j.at("sortNames").get_to(a.sortName);
+
+    if (j.contains("originalReleaseDate"))
+        j.at("originalReleaseDate").get_to(a.originalReleaseDate);
+
+    if (j.contains("releaseDate"))
+        j.at("releaseDate").get_to(a.releaseDate);
+
+    if (j.contains("isCompilation"))
+        j.at("isCompilation").get_to(a.isCompilation);
+
+    if (j.contains("discTitles"))
+        j.at("discTitles").get_to(a.discTitles);
+}
+
+// AlbumList2
+void from_json(const nlohmann::json &j, AlbumList2 &a) {
+    if (j.contains("album"))
+        j.at("album").get_to(a.album);
+}
+} // namespace uboat::album
+
+namespace uboat::server {
+// json parsers
+// License
+void from_json(const nlohmann::json &j, License &l) {
+    j.at("valid").get_to(l.valid);
+    if (j.contains("email"))
+        j.at("email").get_to(l.email);
+    if (j.contains("licenseExpires"))
+        j.at("licenseExpires").get_to(l.licenseExpires);
+    if (j.contains("trialExpires"))
+        j.at("trialExpires").get_to(l.trialExpires);
+}
+
+// SubsonicResponse
+
+template <class Data>
+void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
+    j.at("status").get_to(s.status);
+    j.at("version").get_to(s.version);
+    j.at("type").get_to(s.type);
+    j.at("serverVersion").get_to(s.serverVersion);
+    j.at("openSubsonic").get_to(s.openSubsonic);
+    if (j.contains("error"))
+        j.at("error").get_to(s.error);
+}
+} // namespace uboat::server
