@@ -111,27 +111,42 @@ OSClient::getAlbum(const std::string &id) const {
 }
 
 // Album/song lists
+// Returns a list of random, newest, highest rated etc. albums.
 std::expected<album::AlbumList2, server::Error>
-OSClient::getAlbumList2(const std::string &type, const size_t &size,
-                        const size_t &offset, const size_t &fromYear,
-                        const size_t &toYear, const std::string &genre) const {
+OSClient::getAlbumList2(const std::string &type, const std::string &size,
+                        const std::string &offset, const std::string &fromYear,
+                        const std::string &toYear,
+                        const std::string &genre) const {
 
     // make parameters
     std::map<std::string, std::string> params{
-        {"type", type},
-        {"size", std::to_string(size)},
-        {"offset", std::to_string(offset)}};
-
-    // add optional params
-    if (type == "byYear")
-        params.insert({{"fromYear", std::to_string(fromYear)},
-                       {"toYear", std::to_string(toYear)}});
-    else if (type == "byGenre")
-        params.insert({{"genre", genre}});
+        {"type", type},         {"size", size},     {"offset", size},
+        {"fromYear", fromYear}, {"toYear", toYear}, {"genre", genre}};
 
     // get response
     auto response =
         get_req<album::AlbumList2>("getAlbumList2", params, "albumList2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+//  Returns random songs matching the given criteria.
+std::expected<media::RandomSongs, server::Error>
+OSClient::getRandomSongs(const std::string &size, const std::string &genre,
+                         const std::string &fromYear,
+                         const std::string &toYear) const {
+    // make params
+    std::map<std::string, std::string> params{{"size", size},
+                                              {"genre", genre},
+                                              {"fromYear", fromYear},
+                                              {"toYear", toYear}};
+
+    auto response =
+        get_req<media::RandomSongs>("getRandomSongs", params, "randomSongs");
 
     // extract data
     if (response)
@@ -171,6 +186,7 @@ OSClient::get_req(const std::string &endpoint,
     // (there may still be errors)
     else {
         json j = json::parse(r.text);
+
         auto response = j["subsonic-response"]
                             .template get<server::SubsonicResponse<Data>>();
 
@@ -196,6 +212,170 @@ OSClient::check(server::SubsonicResponse<Data> &r) const {
     else
         return std::unexpected(r.error);
 }
+
+namespace uboat::media {
+// json parser
+// Child
+void from_json(const nlohmann::json &j, Child &c) {
+    j.at("id").get_to(c.id);
+
+    if (j.contains("parent"))
+        j.at("parent").get_to(c.parent);
+    j.at("isDir").get_to(c.isDir);
+    j.at("title").get_to(c.title);
+
+    if (j.contains("album"))
+        j.at("album").get_to(c.album);
+
+    if (j.contains("artist"))
+        j.at("artist").get_to(c.artist);
+
+    if (j.contains("track"))
+        j.at("track").get_to(c.track);
+
+    if (j.contains("year"))
+        j.at("year").get_to(c.year);
+
+    if (j.contains("genre"))
+        j.at("genre").get_to(c.genre);
+
+    if (j.contains("coverArt"))
+        j.at("coverArt").get_to(c.coverArt);
+
+    if (j.contains("size"))
+        j.at("size").get_to(c.size);
+
+    if (j.contains("contentType"))
+        j.at("contentType").get_to(c.contentType);
+
+    if (j.contains("suffix"))
+        j.at("suffix").get_to(c.suffix);
+
+    if (j.contains("transcodedContentType"))
+        j.at("transcodedContentType").get_to(c.transcodedContentType);
+
+    if (j.contains("transcodedSuffix"))
+        j.at("transcodedSuffix").get_to(c.transcodedSuffix);
+
+    if (j.contains("duration"))
+        j.at("duration").get_to(c.duration);
+
+    if (j.contains("bitRate"))
+        j.at("bitRate").get_to(c.bitRate);
+
+    if (j.contains("bitDepth"))
+        j.at("bitDepth").get_to(c.bitDepth);
+
+    if (j.contains("samplingRate"))
+        j.at("samplingRate").get_to(c.samplingRate);
+
+    if (j.contains("channelCount"))
+        j.at("channelCount").get_to(c.channelCount);
+
+    if (j.contains("path"))
+        j.at("path").get_to(c.path);
+
+    if (j.contains("isVideo"))
+        j.at("isVideo").get_to(c.isVideo);
+
+    if (j.contains("userRating"))
+        j.at("userRating").get_to(c.userRating);
+
+    if (j.contains("averageRating"))
+        j.at("averageRating").get_to(c.averageRating);
+
+    if (j.contains("playCount"))
+        j.at("playCount").get_to(c.playCount);
+
+    if (j.contains("discNumber"))
+        j.at("discNumber").get_to(c.discNumber);
+
+    if (j.contains("created"))
+        j.at("created").get_to(c.created);
+
+    if (j.contains("starred"))
+        j.at("starred").get_to(c.starred);
+
+    if (j.contains("albumId"))
+        j.at("albumId").get_to(c.albumId);
+
+    if (j.contains("artistId"))
+        j.at("artistId").get_to(c.artistId);
+
+    if (j.contains("type"))
+        j.at("type").get_to(c.type);
+
+    if (j.contains("mediaType"))
+        j.at("mediaType").get_to(c.mediaType);
+
+    if (j.contains("bookmarkPosition"))
+        j.at("bookmarkPosition").get_to(c.bookmarkPosition);
+
+    if (j.contains("played"))
+        j.at("played").get_to(c.played);
+
+    if (j.contains("bpm"))
+        j.at("bpm").get_to(c.bpm);
+
+    if (j.contains("comment"))
+        j.at("comment").get_to(c.comment);
+
+    if (j.contains("sortName"))
+        j.at("sortName").get_to(c.sortName);
+
+    if (j.contains("musicBrainzId"))
+        j.at("musicBrainzId").get_to(c.musicBrainzId);
+
+    if (j.contains("genres"))
+        j.at("genres").get_to(c.genres);
+
+    if (j.contains("artists"))
+        j.at("artists").get_to(c.artists);
+
+    if (j.contains("displayArtist"))
+        j.at("displayArtist").get_to(c.displayArtist);
+
+    if (j.contains("albumArtist"))
+        j.at("albumArtist").get_to(c.albumArtists);
+
+    if (j.contains("displayAlbumArtist"))
+        j.at("displayAlbumArtist").get_to(c.displayAlbumArtist);
+
+    if (j.contains("replayGain"))
+        j.at("replayGain").get_to(c.replayGain);
+}
+
+// RandomSongs
+void from_json(const nlohmann::json &j, RandomSongs &r) {
+    if (j.contains("song"))
+        j.at("song").get_to(r.song);
+}
+} // namespace uboat::media
+
+namespace uboat::misc {
+// json parsers
+// ReplayGain
+
+void from_json(const nlohmann::json &j, ReplayGain &r) {
+    if (j.contains("trackGain"))
+        j.at("trackGain").get_to(r.trackGain);
+
+    if (j.contains("albumGain"))
+        j.at("albumGain").get_to(r.albumGain);
+
+    if (j.contains("trackPeak"))
+        j.at("trackPeak").get_to(r.trackPeak);
+
+    if (j.contains("albumPeak"))
+        j.at("albumPeak").get_to(r.albumPeak);
+
+    if (j.contains("baseGain"))
+        j.at("baseGain").get_to(r.baseGain);
+
+    if (j.contains("fallbackGain"))
+        j.at("fallbackGain").get_to(r.fallbackGain);
+}
+} // namespace uboat::misc
 
 namespace uboat::album {
 // json parsers
@@ -282,10 +462,13 @@ namespace uboat::server {
 // License
 void from_json(const nlohmann::json &j, License &l) {
     j.at("valid").get_to(l.valid);
+
     if (j.contains("email"))
         j.at("email").get_to(l.email);
+
     if (j.contains("licenseExpires"))
         j.at("licenseExpires").get_to(l.licenseExpires);
+
     if (j.contains("trialExpires"))
         j.at("trialExpires").get_to(l.trialExpires);
 }
@@ -299,6 +482,7 @@ void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
     j.at("type").get_to(s.type);
     j.at("serverVersion").get_to(s.serverVersion);
     j.at("openSubsonic").get_to(s.openSubsonic);
+
     if (j.contains("error"))
         j.at("error").get_to(s.error);
 }

@@ -117,11 +117,25 @@ struct DiscTitle {
     std::string title;
 };
 
+struct ReplayGain {
+    size_t trackGain;
+    size_t albumGain;
+    size_t trackPeak;
+    size_t albumPeak;
+    size_t baseGain;
+    size_t fallbackGain;
+};
+
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Genre, value, songCount, albumCount)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RecordLabel, name)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemGenre, name)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemDate, year, month, day)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DiscTitle, disc, title)
+
+// json parsers
+// ReplayGain
+void from_json(const nlohmann::json &j, ReplayGain &r);
+
 } // namespace misc
 
 namespace media {
@@ -162,8 +176,8 @@ struct Child {
     std::string type;
     std::string mediaType;
     std::size_t bookmarkPosition;
-    std::size_t originalWidth;
-    std::size_t originalHeight;
+    // std::size_t originalWidth;
+    // std::size_t originalHeight;
     std::string played;
     std::size_t bpm;
     std::string comment;
@@ -177,19 +191,21 @@ struct Child {
     // contributors
     // displayComposer
     // moods
-    // replayGain
+    misc::ReplayGain replayGain;
 };
 
-// Define types for json parsing
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Child, id, parent, isDir, title, album, artist, track, year, genre,
-    coverArt, size, contentType, suffix, transcodedContentType,
-    transcodedSuffix, duration, bitRate, bitDepth, samplingRate, channelCount,
-    path, isVideo, userRating, averageRating, playCount, discNumber, created,
-    starred, albumId, artistId, type, mediaType, bookmarkPosition,
-    originalWidth, originalHeight, played, bpm, comment, sortName,
-    musicBrainzId, genres, artists, displayArtist, albumArtists,
-    displayAlbumArtist)
+/// RandomSongs list.
+/// https://opensubsonic.netlify.app/docs/responses/randomsongs/
+struct RandomSongs {
+    std::vector<Child> song;
+};
+
+// json parser
+// Child
+void from_json(const nlohmann::json &j, Child &c);
+
+// RandomSongs
+void from_json(const nlohmann::json &j, RandomSongs &r);
 } // namespace media
 
 namespace album {
@@ -235,15 +251,6 @@ struct AlbumList2 {
 // json parsers
 // AlbumID3
 void from_json(const nlohmann::json &j, AlbumID3 &a);
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(AlbumID3WithSongs, id, name, artist,
-                                   artistId, coverArt, songCount, duration,
-                                   playCount, created, starred, year, genre,
-                                   played, userRating, recordLabels,
-                                   musicBrainzId, genres, artists,
-                                   displayArtist, releaseTypes, moods, sortName,
-                                   originalReleaseDate, releaseDate,
-                                   isCompilation, discTitles, song)
 
 // AlbumList2
 void from_json(const nlohmann::json &j, AlbumList2 &a);
@@ -330,6 +337,7 @@ public:
     /// Returns details for an album, including a list of songs. This method
     /// organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getalbum/
+    ///
     /// \param id the album id
     /// \return returns an ablum and songs on success and error on failure
     std::expected<album::AlbumID3WithSongs, server::Error>
@@ -340,12 +348,41 @@ public:
     /// Returns a list of random, newest, highest rated etc. albums.
     /// Similar to getAlbumList, but organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getalbumlist2/
-    /// \param
-    std::expected<album::AlbumList2, server::Error>
-    getAlbumList2(const std::string &type, const size_t &size = 10,
-                  const size_t &offset = 0, const size_t &fromYear = 0,
-                  const size_t &toYear = 0,
-                  const std::string &genre = "") const;
+    ///
+    /// \param type The list type. Must be one of the following: random, newest,
+    /// highest, frequent, recent. Since 1.8.0 you can also use
+    /// alphabeticalByName or alphabeticalByArtist to page through all albums
+    /// alphabetically, and starred to retrieve starred albums. Since 1.10.1 you
+    /// can use byYear and byGenre to list albums in a given year range or
+    /// genre.
+    ///
+    /// \param size The number of albums to return. Max 500.
+    /// \param offset The list offset. Useful if you for example want to page
+    /// through the list of newest albums.
+    ///
+    /// \param fromYear The first year in the range.
+    /// If fromYear > toYear a reverse chronological list is returned.
+    ///
+    /// \param toYear The last year in the range.
+    /// \param genre The name of the genre, e.g., “Rock”.
+    /// \return AlbumList2 or Error
+    std::expected<album::AlbumList2, server::Error> getAlbumList2(
+        const std::string &type, const std::string &size = "",
+        const std::string &offset = "", const std::string &fromYear = "",
+        const std::string &toYear = "", const std::string &genre = "") const;
+
+    /// Returns random songs matching the given criteria.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getrandomsongs/
+    ///
+    /// \param size The maximum number of songs to return. Max 500.
+    /// \param genre Only returns songs belonging to this genre.
+    /// \param fromYear Only return songs published after or in this year.
+    /// \param toYear Only return songs published before or in this year.
+    /// \return RandomSongs or Error
+    std::expected<media::RandomSongs, server::Error>
+    getRandomSongs(const std::string &size = "", const std::string &genre = "",
+                   const std::string &fromYear = "",
+                   const std::string &toYear = "") const;
 
 private:
     // client information:

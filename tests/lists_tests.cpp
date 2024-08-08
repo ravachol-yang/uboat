@@ -23,19 +23,38 @@ TEST_SUITE("Album/Song Lists") {
 
     TEST_CASE("getAlbumList2") {
         SUBCASE("get random") {
-            auto result = client.getAlbumList2("random",10);
+            auto result = client.getAlbumList2("random");
             CHECK(result.has_value());
             CHECK_EQ(result.value().album.size(), 3);
         }
         SUBCASE("get byYear") {
-            auto result = client.getAlbumList2("byYear",10,0,2000,2020);
+            auto result =
+                client.getAlbumList2("byYear", "", "", "2000", "2020");
             CHECK(result.has_value());
             CHECK_GT(result.value().album.at(0).year, 2000);
             CHECK_LT(result.value().album.at(0).year, 2020);
         }
         SUBCASE("get byGenre") {
-            auto result = client.getAlbumList2("byGenre",10,0,0,0," ");
+            auto result = client.getAlbumList2("byGenre", "", "", "", "", " ");
             CHECK(result.has_value());
+        }
+    }
+
+    TEST_CASE("getRandomSongs") {
+        SUBCASE("random") {
+            auto result = client.getRandomSongs();
+            CHECK(result.has_value());
+        }
+        SUBCASE("byYear") {
+            auto result = client.getRandomSongs("", "", "2000", "2020");
+            CHECK(result.has_value());
+            CHECK_GT(result.value().song.at(0).year, 2000);
+            CHECK_LT(result.value().song.at(0).year, 2020);
+        }
+        SUBCASE("get byGenre") {
+            auto result = client.getRandomSongs("", "Classical", "", "");
+            CHECK(result.has_value());
+            CHECK_EQ(result.value().song.at(0).genre, "Classical");
         }
     }
 }
