@@ -57,4 +57,11 @@ TEST_SUITE("Album/Song Lists") {
             CHECK_EQ(result.value().song.at(0).genre, "Classical");
         }
     }
+
+    TEST_CASE("getNowPlaying") {
+        SUBCASE("get empty") {
+            auto result = client.getNowPlaying();
+            CHECK(result.has_value());
+        }
+    }
 }

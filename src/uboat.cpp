@@ -155,6 +155,20 @@ OSClient::getRandomSongs(const std::string &size, const std::string &genre,
         return std::unexpected(response.error());
 }
 
+// Returns what is currently being played by all users. Takes no extra
+// parameters
+std::expected<media::NowPlaying, server::Error>
+OSClient::getNowPlaying() const {
+    auto response =
+        get_req<media::NowPlaying>("getNowPlaying", {}, "nowPlaying");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // private
 /// helper for GET requests
 template <class Data>
@@ -212,6 +226,31 @@ OSClient::check(server::SubsonicResponse<Data> &r) const {
     else
         return std::unexpected(r.error);
 }
+
+namespace uboat::misc {
+// json parsers
+// ReplayGain
+
+void from_json(const nlohmann::json &j, ReplayGain &r) {
+    if (j.contains("trackGain"))
+        j.at("trackGain").get_to(r.trackGain);
+
+    if (j.contains("albumGain"))
+        j.at("albumGain").get_to(r.albumGain);
+
+    if (j.contains("trackPeak"))
+        j.at("trackPeak").get_to(r.trackPeak);
+
+    if (j.contains("albumPeak"))
+        j.at("albumPeak").get_to(r.albumPeak);
+
+    if (j.contains("baseGain"))
+        j.at("baseGain").get_to(r.baseGain);
+
+    if (j.contains("fallbackGain"))
+        j.at("fallbackGain").get_to(r.fallbackGain);
+}
+} // namespace uboat::misc
 
 namespace uboat::media {
 // json parser
@@ -345,37 +384,35 @@ void from_json(const nlohmann::json &j, Child &c) {
         j.at("replayGain").get_to(c.replayGain);
 }
 
+// NowPlayingEntry
+void from_json(const nlohmann::json &j, NowPlayingEntry &n) {
+
+    from_json(j, static_cast<Child&>(n));
+
+    j.at("username").get_to(n.username);
+
+    if (j.contains("minutesAgo"))
+        j.at("minutesAgo").get_to(n.minutesAgo);
+
+    if (j.contains("playerId"))
+        j.at("playerId").get_to(n.minutesAgo);
+
+    if (j.contains("playerName"))
+        j.at("playerName").get_to(n.playerName);
+}
+
 // RandomSongs
 void from_json(const nlohmann::json &j, RandomSongs &r) {
     if (j.contains("song"))
         j.at("song").get_to(r.song);
 }
-} // namespace uboat::media
 
-namespace uboat::misc {
-// json parsers
-// ReplayGain
-
-void from_json(const nlohmann::json &j, ReplayGain &r) {
-    if (j.contains("trackGain"))
-        j.at("trackGain").get_to(r.trackGain);
-
-    if (j.contains("albumGain"))
-        j.at("albumGain").get_to(r.albumGain);
-
-    if (j.contains("trackPeak"))
-        j.at("trackPeak").get_to(r.trackPeak);
-
-    if (j.contains("albumPeak"))
-        j.at("albumPeak").get_to(r.albumPeak);
-
-    if (j.contains("baseGain"))
-        j.at("baseGain").get_to(r.baseGain);
-
-    if (j.contains("fallbackGain"))
-        j.at("fallbackGain").get_to(r.fallbackGain);
+// NowPlaying
+void from_json(const nlohmann::json &j, NowPlaying &n) {
+    if (j.contains("entry"))
+        j.at("entry").get_to(n.entry);
 }
-} // namespace uboat::misc
+} // namespace uboat::media
 
 namespace uboat::album {
 // json parsers

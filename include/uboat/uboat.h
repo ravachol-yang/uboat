@@ -194,18 +194,40 @@ struct Child {
     misc::ReplayGain replayGain;
 };
 
+/// NowPlayingEntry extends Child (See Child documentation for the corresponding
+/// fields) https://opensubsonic.netlify.app/docs/responses/nowplayingentry/
+struct NowPlayingEntry : public Child {
+    std::string username;
+    size_t minutesAgo;
+    size_t playerId;
+    std::string playerName;
+};
+
 /// RandomSongs list.
 /// https://opensubsonic.netlify.app/docs/responses/randomsongs/
 struct RandomSongs {
     std::vector<Child> song;
 };
 
+/// nowPlaying
+/// https://opensubsonic.netlify.app/docs/responses/nowplaying/
+struct NowPlaying {
+    std::vector<NowPlayingEntry> entry;
+};
+
 // json parser
 // Child
 void from_json(const nlohmann::json &j, Child &c);
 
+// NowPlayingEntry
+void from_json(const nlohmann::json &j, NowPlayingEntry &n);
+
 // RandomSongs
 void from_json(const nlohmann::json &j, RandomSongs &r);
+
+// NowPlaying
+void from_json(const nlohmann::json &j, NowPlaying &n);
+
 } // namespace media
 
 namespace album {
@@ -383,6 +405,13 @@ public:
     getRandomSongs(const std::string &size = "", const std::string &genre = "",
                    const std::string &fromYear = "",
                    const std::string &toYear = "") const;
+
+    /// Returns what is currently being played by all users. Takes no extra
+    /// parameters
+    /// https://opensubsonic.netlify.app/docs/endpoints/getnowplaying/
+    ///
+    /// \return Nowplaying or Error
+    std::expected<media::NowPlaying, server::Error> getNowPlaying() const;
 
 private:
     // client information:
