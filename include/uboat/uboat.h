@@ -129,10 +129,12 @@ struct ReplayGain {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Genre, value, songCount, albumCount)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RecordLabel, name)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemGenre, name)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemDate, year, month, day)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DiscTitle, disc, title)
 
 // json parsers
+// ItemDate
+void from_json(const nlohmann::json &j, ItemDate &i);
+
 // ReplayGain
 void from_json(const nlohmann::json &j, ReplayGain &r);
 
@@ -273,6 +275,9 @@ struct AlbumList2 {
 // json parsers
 // AlbumID3
 void from_json(const nlohmann::json &j, AlbumID3 &a);
+
+// AlbumID3WithSongs
+void from_json(const nlohmann::json &j, AlbumID3WithSongs &a);
 
 // AlbumList2
 void from_json(const nlohmann::json &j, AlbumList2 &a);

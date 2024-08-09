@@ -103,11 +103,18 @@ std::expected<server::License, server::Error> OSClient::getLicense() const {
 }
 
 // Browsing
+// Returns details for an album, including a list of songs. This method
+// organizes music according to ID3 tags.
 std::expected<album::AlbumID3WithSongs, server::Error>
 OSClient::getAlbum(const std::string &id) const {
     auto response =
-        get_req<album::AlbumID3WithSongs>("getAlbum", {{"id", id}}, "albums");
-    return {};
+        get_req<album::AlbumID3WithSongs>("getAlbum", {{"id", id}}, "album");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
 }
 
 // Album/song lists
@@ -229,8 +236,14 @@ OSClient::check(server::SubsonicResponse<Data> &r) const {
 
 namespace uboat::misc {
 // json parsers
-// ReplayGain
+// ItemDate
+void from_json(const nlohmann::json &j, ItemDate &i) {
+    set_if_contains(j, "year", i.year);
+    set_if_contains(j, "month", i.month);
+    set_if_contains(j, "day", i.day);
+}
 
+// ReplayGain
 void from_json(const nlohmann::json &j, ReplayGain &r) {
     set_if_contains(j, "trackGain", r.trackGain);
     set_if_contains(j, "albumGain", r.albumGain);
@@ -353,6 +366,12 @@ void from_json(const nlohmann::json &j, AlbumID3 &a) {
     set_if_contains(j, "rCeleaseDate", a.releaseDate);
     set_if_contains(j, "isCompilation", a.isCompilation);
     set_if_contains(j, "discTitles", a.discTitles);
+}
+
+// AlbumID3WithSongs
+void from_json(const nlohmann::json &j, AlbumID3WithSongs &a) {
+    from_json(j, static_cast<AlbumID3 &>(a));
+    set_if_contains(j, "song", a.song);
 }
 
 // AlbumList2
