@@ -232,23 +232,12 @@ namespace uboat::misc {
 // ReplayGain
 
 void from_json(const nlohmann::json &j, ReplayGain &r) {
-    if (j.contains("trackGain"))
-        j.at("trackGain").get_to(r.trackGain);
-
-    if (j.contains("albumGain"))
-        j.at("albumGain").get_to(r.albumGain);
-
-    if (j.contains("trackPeak"))
-        j.at("trackPeak").get_to(r.trackPeak);
-
-    if (j.contains("albumPeak"))
-        j.at("albumPeak").get_to(r.albumPeak);
-
-    if (j.contains("baseGain"))
-        j.at("baseGain").get_to(r.baseGain);
-
-    if (j.contains("fallbackGain"))
-        j.at("fallbackGain").get_to(r.fallbackGain);
+    set_if_contains(j, "trackGain", r.trackGain);
+    set_if_contains(j, "albumGain", r.albumGain);
+    set_if_contains(j, "trackPeak", r.trackPeak);
+    set_if_contains(j, "albumPeak", r.albumPeak);
+    set_if_contains(j, "baseGain", r.baseGain);
+    set_if_contains(j, "fallbackGain", r.fallbackGain);
 }
 } // namespace uboat::misc
 
@@ -258,159 +247,75 @@ namespace uboat::media {
 void from_json(const nlohmann::json &j, Child &c) {
     j.at("id").get_to(c.id);
 
-    if (j.contains("parent"))
-        j.at("parent").get_to(c.parent);
+    set_if_contains(j, "parent", c.parent);
+
     j.at("isDir").get_to(c.isDir);
     j.at("title").get_to(c.title);
 
-    if (j.contains("album"))
-        j.at("album").get_to(c.album);
-
-    if (j.contains("artist"))
-        j.at("artist").get_to(c.artist);
-
-    if (j.contains("track"))
-        j.at("track").get_to(c.track);
-
-    if (j.contains("year"))
-        j.at("year").get_to(c.year);
-
-    if (j.contains("genre"))
-        j.at("genre").get_to(c.genre);
-
-    if (j.contains("coverArt"))
-        j.at("coverArt").get_to(c.coverArt);
-
-    if (j.contains("size"))
-        j.at("size").get_to(c.size);
-
-    if (j.contains("contentType"))
-        j.at("contentType").get_to(c.contentType);
-
-    if (j.contains("suffix"))
-        j.at("suffix").get_to(c.suffix);
-
-    if (j.contains("transcodedContentType"))
-        j.at("transcodedContentType").get_to(c.transcodedContentType);
-
-    if (j.contains("transcodedSuffix"))
-        j.at("transcodedSuffix").get_to(c.transcodedSuffix);
-
-    if (j.contains("duration"))
-        j.at("duration").get_to(c.duration);
-
-    if (j.contains("bitRate"))
-        j.at("bitRate").get_to(c.bitRate);
-
-    if (j.contains("bitDepth"))
-        j.at("bitDepth").get_to(c.bitDepth);
-
-    if (j.contains("samplingRate"))
-        j.at("samplingRate").get_to(c.samplingRate);
-
-    if (j.contains("channelCount"))
-        j.at("channelCount").get_to(c.channelCount);
-
-    if (j.contains("path"))
-        j.at("path").get_to(c.path);
-
-    if (j.contains("isVideo"))
-        j.at("isVideo").get_to(c.isVideo);
-
-    if (j.contains("userRating"))
-        j.at("userRating").get_to(c.userRating);
-
-    if (j.contains("averageRating"))
-        j.at("averageRating").get_to(c.averageRating);
-
-    if (j.contains("playCount"))
-        j.at("playCount").get_to(c.playCount);
-
-    if (j.contains("discNumber"))
-        j.at("discNumber").get_to(c.discNumber);
-
-    if (j.contains("created"))
-        j.at("created").get_to(c.created);
-
-    if (j.contains("starred"))
-        j.at("starred").get_to(c.starred);
-
-    if (j.contains("albumId"))
-        j.at("albumId").get_to(c.albumId);
-
-    if (j.contains("artistId"))
-        j.at("artistId").get_to(c.artistId);
-
-    if (j.contains("type"))
-        j.at("type").get_to(c.type);
-
-    if (j.contains("mediaType"))
-        j.at("mediaType").get_to(c.mediaType);
-
-    if (j.contains("bookmarkPosition"))
-        j.at("bookmarkPosition").get_to(c.bookmarkPosition);
-
-    if (j.contains("played"))
-        j.at("played").get_to(c.played);
-
-    if (j.contains("bpm"))
-        j.at("bpm").get_to(c.bpm);
-
-    if (j.contains("comment"))
-        j.at("comment").get_to(c.comment);
-
-    if (j.contains("sortName"))
-        j.at("sortName").get_to(c.sortName);
-
-    if (j.contains("musicBrainzId"))
-        j.at("musicBrainzId").get_to(c.musicBrainzId);
-
-    if (j.contains("genres"))
-        j.at("genres").get_to(c.genres);
-
-    if (j.contains("artists"))
-        j.at("artists").get_to(c.artists);
-
-    if (j.contains("displayArtist"))
-        j.at("displayArtist").get_to(c.displayArtist);
-
-    if (j.contains("albumArtist"))
-        j.at("albumArtist").get_to(c.albumArtists);
-
-    if (j.contains("displayAlbumArtist"))
-        j.at("displayAlbumArtist").get_to(c.displayAlbumArtist);
-
-    if (j.contains("replayGain"))
-        j.at("replayGain").get_to(c.replayGain);
+    set_if_contains(j, "album", c.album);
+    set_if_contains(j, "artist", c.artist);
+    set_if_contains(j, "track", c.track);
+    set_if_contains(j, "year", c.year);
+    set_if_contains(j, "genre", c.genre);
+    set_if_contains(j, "coverArt", c.coverArt);
+    set_if_contains(j, "size", c.size);
+    set_if_contains(j, "contentType", c.contentType);
+    set_if_contains(j, "suffix", c.suffix);
+    set_if_contains(j, "transcodedContentType", c.transcodedContentType);
+    set_if_contains(j, "transcodedSuffix", c.transcodedSuffix);
+    set_if_contains(j, "duration", c.duration);
+    set_if_contains(j, "bitRate", c.bitRate);
+    set_if_contains(j, "bitDepth", c.bitDepth);
+    set_if_contains(j, "samplingRate", c.samplingRate);
+    set_if_contains(j, "channelCount", c.channelCount);
+    set_if_contains(j, "path", c.path);
+    set_if_contains(j, "isVideo", c.isVideo);
+    set_if_contains(j, "userRating", c.userRating);
+    set_if_contains(j, "averageRating", c.averageRating);
+    set_if_contains(j, "playCount", c.playCount);
+    set_if_contains(j, "discNumber", c.discNumber);
+    set_if_contains(j, "created", c.created);
+    set_if_contains(j, "starred", c.starred);
+    set_if_contains(j, "albumId", c.albumId);
+    set_if_contains(j, "artistId", c.artistId);
+    set_if_contains(j, "type", c.type);
+    set_if_contains(j, "mediaType", c.mediaType);
+    set_if_contains(j, "bookmarkPosition", c.bookmarkPosition);
+    set_if_contains(j, "originalWidth", c.originalWidth);
+    set_if_contains(j, "originalHeight", c.originalHeight);
+    set_if_contains(j, "played", c.played);
+    set_if_contains(j, "bpm", c.bpm);
+    set_if_contains(j, "comment", c.comment);
+    set_if_contains(j, "sortName", c.sortName);
+    set_if_contains(j, "musicBrainzId", c.musicBrainzId);
+    set_if_contains(j, "genres", c.genres);
+    set_if_contains(j, "artists", c.artists);
+    set_if_contains(j, "displayArtist", c.displayArtist);
+    set_if_contains(j, "albumArtists", c.albumArtists);
+    set_if_contains(j, "displayAlbumArtist", c.displayAlbumArtist);
+    set_if_contains(j, "replayGain", c.replayGain);
 }
 
 // NowPlayingEntry
 void from_json(const nlohmann::json &j, NowPlayingEntry &n) {
 
-    from_json(j, static_cast<Child&>(n));
+    from_json(j, static_cast<Child &>(n));
 
     j.at("username").get_to(n.username);
 
-    if (j.contains("minutesAgo"))
-        j.at("minutesAgo").get_to(n.minutesAgo);
-
-    if (j.contains("playerId"))
-        j.at("playerId").get_to(n.minutesAgo);
-
-    if (j.contains("playerName"))
-        j.at("playerName").get_to(n.playerName);
+    set_if_contains(j, "minutesAgo", n.minutesAgo);
+    set_if_contains(j, "playerId", n.playerId);
+    set_if_contains(j, "playerName", n.playerName);
 }
 
 // RandomSongs
 void from_json(const nlohmann::json &j, RandomSongs &r) {
-    if (j.contains("song"))
-        j.at("song").get_to(r.song);
+    set_if_contains(j, "song", r.song);
 }
 
 // NowPlaying
 void from_json(const nlohmann::json &j, NowPlaying &n) {
-    if (j.contains("entry"))
-        j.at("entry").get_to(n.entry);
+    set_if_contains(j, "entry", n.entry);
 }
 } // namespace uboat::media
 
@@ -421,76 +326,38 @@ void from_json(const nlohmann::json &j, AlbumID3 &a) {
     j.at("id").get_to(a.id);
     j.at("name").get_to(a.name);
 
-    if (j.contains("artist"))
-        j.at("artist").get_to(a.artist);
-
-    if (j.contains("artistId"))
-        j.at("artistId").get_to(a.artistId);
-
-    if (j.contains("coverArt"))
-        j.at("coverArt").get_to(a.coverArt);
+    set_if_contains(j, "artist", a.artist);
+    set_if_contains(j, "artistId", a.artistId);
+    set_if_contains(j, "coverArt", a.coverArt);
 
     j.at("songCount").get_to(a.songCount);
     j.at("duration").get_to(a.duration);
 
-    if (j.contains("playCount"))
-        j.at("playCount").get_to(a.playCount);
+    set_if_contains(j, "playCount", a.playCount);
 
     j.at("created").get_to(a.created);
 
-    if (j.contains("starred"))
-        j.at("starred").get_to(a.starred);
-
-    if (j.contains("year"))
-        j.at("year").get_to(a.year);
-
-    if (j.contains("played"))
-        j.at("played").get_to(a.played);
-
-    if (j.contains("userRating"))
-        j.at("userRating").get_to(a.userRating);
-
-    if (j.contains("recordLabels"))
-        j.at("recordLabels").get_to(a.recordLabels);
-
-    if (j.contains("musicBrainzId"))
-        j.at("musicBrainzId").get_to(a.musicBrainzId);
-
-    if (j.contains("genres"))
-        j.at("genres").get_to(a.genres);
-
-    if (j.contains("artists"))
-        j.at("artists").get_to(a.artists);
-
-    if (j.contains("displayArtist"))
-        j.at("displayArtist").get_to(a.displayArtist);
-
-    if (j.contains("releaseTypes"))
-        j.at("releaseTypes").get_to(a.releaseTypes);
-
-    if (j.contains("moods"))
-        j.at("moods").get_to(a.moods);
-
-    if (j.contains("sortNames"))
-        j.at("sortNames").get_to(a.sortName);
-
-    if (j.contains("originalReleaseDate"))
-        j.at("originalReleaseDate").get_to(a.originalReleaseDate);
-
-    if (j.contains("releaseDate"))
-        j.at("releaseDate").get_to(a.releaseDate);
-
-    if (j.contains("isCompilation"))
-        j.at("isCompilation").get_to(a.isCompilation);
-
-    if (j.contains("discTitles"))
-        j.at("discTitles").get_to(a.discTitles);
+    set_if_contains(j, "starred", a.starred);
+    set_if_contains(j, "year", a.year);
+    set_if_contains(j, "played", a.played);
+    set_if_contains(j, "userRating", a.userRating);
+    set_if_contains(j, "recordLabels", a.recordLabels);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "genres", a.genres);
+    set_if_contains(j, "artists", a.artists);
+    set_if_contains(j, "displayArtist", a.displayArtist);
+    set_if_contains(j, "releaseTypes", a.releaseTypes);
+    set_if_contains(j, "moods", a.moods);
+    set_if_contains(j, "sortName", a.sortName);
+    set_if_contains(j, "originalReleaseDate", a.originalReleaseDate);
+    set_if_contains(j, "rCeleaseDate", a.releaseDate);
+    set_if_contains(j, "isCompilation", a.isCompilation);
+    set_if_contains(j, "discTitles", a.discTitles);
 }
 
 // AlbumList2
 void from_json(const nlohmann::json &j, AlbumList2 &a) {
-    if (j.contains("album"))
-        j.at("album").get_to(a.album);
+    set_if_contains(j, "album", a.album);
 }
 } // namespace uboat::album
 
@@ -500,14 +367,9 @@ namespace uboat::server {
 void from_json(const nlohmann::json &j, License &l) {
     j.at("valid").get_to(l.valid);
 
-    if (j.contains("email"))
-        j.at("email").get_to(l.email);
-
-    if (j.contains("licenseExpires"))
-        j.at("licenseExpires").get_to(l.licenseExpires);
-
-    if (j.contains("trialExpires"))
-        j.at("trialExpires").get_to(l.trialExpires);
+    set_if_contains(j, "email", l.email);
+    set_if_contains(j, "licenseExpires", l.licenseExpires);
+    set_if_contains(j, "trialExpires", l.trialExpires);
 }
 
 // SubsonicResponse
@@ -520,7 +382,15 @@ void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s) {
     j.at("serverVersion").get_to(s.serverVersion);
     j.at("openSubsonic").get_to(s.openSubsonic);
 
-    if (j.contains("error"))
-        j.at("error").get_to(s.error);
+    set_if_contains(j, "error", s.error);
 }
 } // namespace uboat::server
+
+namespace uboat {
+
+void set_if_contains(const nlohmann::json &j, const std::string &key, auto &v) {
+    if (j.contains(key))
+        j.at(key).get_to(v);
+}
+
+} // namespace uboat
