@@ -1,8 +1,9 @@
 macro(add_uboat_test _TEST_NAME)
-  add_executable(${_TEST_NAME}_tests ${_TEST_NAME}_tests.cpp)
-  target_link_libraries(${_TEST_NAME}_tests PRIVATE ${CMAKE_PROJECT_NAME})
-  add_test(NAME ${_TEST_NAME}_tests COMMAND ${_TEST_NAME}_tests)
+  add_executable(test_${_TEST_NAME} test_${_TEST_NAME}.cpp)
+  target_link_libraries(test_${_TEST_NAME} PRIVATE ${CMAKE_PROJECT_NAME})
+  add_test(NAME test_${_TEST_NAME} COMMAND test_${_TEST_NAME})
 endmacro()
 
 add_uboat_test(system)
+add_uboat_test(browsing)
 add_uboat_test(lists)
