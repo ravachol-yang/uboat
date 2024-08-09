@@ -176,8 +176,8 @@ struct Child {
     std::string type;
     std::string mediaType;
     std::size_t bookmarkPosition;
-    // std::size_t originalWidth;
-    // std::size_t originalHeight;
+    std::size_t originalWidth;
+    std::size_t originalHeight;
     std::string played;
     std::size_t bpm;
     std::string comment;
@@ -324,6 +324,9 @@ void to_json(nlohmann::json &j, const SubsonicResponse<Data> &s) {
 template <class Data>
 void from_json(const nlohmann::json &j, SubsonicResponse<Data> &s);
 } // namespace server
+
+// helper for optional fields
+void set_if_contains(const nlohmann::json &j, const std::string &key, auto &v);
 
 /// OpenSubsonic Client
 class OSClient {
