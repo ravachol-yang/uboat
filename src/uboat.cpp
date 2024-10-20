@@ -11,6 +11,7 @@
 #include <map>
 #include <nlohmann/json_fwd.hpp>
 #include <openssl/evp.h>
+#include <ostream>
 #include <random>
 #include <sstream>
 #include <string>
@@ -138,6 +139,23 @@ OSClient::getAlbum(const std::string &id) const {
         return std::unexpected(response.error());
 }
 
+std::expected<artist::ArtistInfo2, server::Error>
+OSClient::getArtistInfo2(const std::string &id, const std::string &count,
+                         const std::string &includeNotPresent) const {
+    // make params
+    std::map<std::string, std::string> params{
+        {"id", id}, {"count", count}, {"includeNotPresent", includeNotPresent}};
+
+    auto response =
+        get_req<artist::ArtistInfo2>("getArtistInfo2", params, "artistInfo2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // Album/song lists
 // Returns a list of random, newest, highest rated etc. albums.
 std::expected<album::AlbumList2, server::Error>
@@ -156,8 +174,8 @@ OSClient::getAlbumList2(const std::string &type, const std::string &size,
         get_req<album::AlbumList2>("getAlbumList2", params, "albumList2");
 
     // extract data
-    if (response)
-        return check(response.value());
+    if (response) {
+        return check(response.value()); }
     else
         return std::unexpected(response.error());
 }
@@ -269,6 +287,16 @@ void from_json(const nlohmann::json &j, ArtistID3 &a) {
     set_if_contains(j, "musicBrainzId", a.musicBrainzId);
     set_if_contains(j, "sortName", a.sortName);
     set_if_contains(j, "roles", a.roles);
+}
+// ArtistInfo2
+void from_json(const nlohmann::json &j, ArtistInfo2 &a) {
+    set_if_contains(j, "biography", a.biography);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "lastFmUrl", a.lastFmUrl);
+    set_if_contains(j, "smallImageUrl", a.smallImageUrl);
+    set_if_contains(j, "mediumImageUrl", a.mediumImageUrl);
+    set_if_contains(j, "largeImageUrl", a.largeImageUrl);
+    set_if_contains(j, "similarArtist", a.similarArtist);
 }
 // IndexID3
 void from_json(const nlohmann::json &j, IndexID3 &i) {

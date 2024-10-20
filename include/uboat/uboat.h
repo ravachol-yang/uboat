@@ -382,6 +382,19 @@ public:
     std::expected<album::AlbumID3WithSongs, server::Error>
     getAlbum(const std::string &id) const;
 
+    /// Returns artist info.
+    /// Similar to getArtistInfo, but organizes music according to ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getartistinfo2/
+    ///
+    /// \param id The artist, album or song ID.
+    /// \param count Max number of similar artists to return.
+    /// \param includeNotPresent Whether to return artists that are not present
+    /// in the media library.
+    /// \return A subsonic-response element with a nested artistInfo2 element on success.
+    std::expected<artist::ArtistInfo2, server::Error>
+    getArtistInfo2(const std::string &id, const std::string &count = "",
+                   const std::string &includeNotPresent = "false") const;
+
     // Album/song lists
 
     /// Returns a list of random, newest, highest rated etc. albums.

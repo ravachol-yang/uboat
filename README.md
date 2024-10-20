@@ -20,7 +20,7 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [ ] [getVideos](https://opensubsonic.netlify.app/docs/endpoints/getvideos/)
 - [ ] [getVideoInfo](https://opensubsonic.netlify.app/docs/endpoints/getvideoinfo/)
 - [ ] [getArtistInfo](https://opensubsonic.netlify.app/docs/endpoints/getartistinfo/)
-- [ ] [getArtistInfo2](https://opensubsonic.netlify.app/docs/endpoints/getartistinfo2/)
+- [x] [getArtistInfo2](https://opensubsonic.netlify.app/docs/endpoints/getartistinfo2/)
 - [ ] [getAlbumInfo](https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo/)
 - [ ] [getAlbumInfo2](https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo2/)
 - [ ] [getSimilarSongs](https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs/)

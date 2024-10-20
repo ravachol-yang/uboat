@@ -61,4 +61,25 @@ TEST_SUITE("Browsing") {
             CHECK_EQ(result.error().code, 70);
         }
     }
+
+    TEST_CASE("getArtistInfo2") {
+        auto result = client.getArtists();
+
+        REQUIRE(result.has_value());
+
+        auto artists = result.value().index.at(0).artist;
+
+        SUBCASE("with id") {
+            auto id = artists.at(0).id;
+            auto result = client.getArtistInfo2(id);
+            CHECK(result.has_value());
+        }
+
+        SUBCASE("with wrong id") {
+            auto id = "wrong";
+            auto result = client.getArtistInfo2(id);
+            CHECK_FALSE(result.has_value());
+            CHECK_EQ(result.error().code, 70);
+        }
+    }
 }
