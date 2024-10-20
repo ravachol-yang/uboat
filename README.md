@@ -13,7 +13,7 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [ ] [getIndexes](https://opensubsonic.netlify.app/docs/endpoints/getindexes/)
 - [ ] [getMusicDirectory](https://opensubsonic.netlify.app/docs/endpoints/getmusicdirectory/)
 - [ ] [getGenres](https://opensubsonic.netlify.app/docs/endpoints/getgenres/)
-- [ ] [getArtists](https://opensubsonic.netlify.app/docs/endpoints/getartists/)
+- [x] [getArtists](https://opensubsonic.netlify.app/docs/endpoints/getartists/)
 - [ ] [getArtist](https://opensubsonic.netlify.app/docs/endpoints/getartist/)
 - [x] [getAlbum](https://opensubsonic.netlify.app/docs/endpoints/getalbum/)
 - [ ] [getSong](https://opensubsonic.netlify.app/docs/endpoints/getsong/)

@@ -103,6 +103,17 @@ std::expected<server::License, server::Error> OSClient::getLicense() const {
 }
 
 // Browsing
+
+// Similar to getIndexes, but organizes music according to ID3 tags.
+std::expected<artist::Artists, server::Error> OSClient::getArtists() const {
+    auto response = get_req<artist::Artists>("getArtists", {}, "artists");
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // Returns details for an album, including a list of songs. This method
 // organizes music according to ID3 tags.
 std::expected<album::AlbumID3WithSongs, server::Error>
@@ -233,6 +244,34 @@ OSClient::check(server::SubsonicResponse<Data> &r) const {
     else
         return std::unexpected(r.error);
 }
+
+namespace uboat::artist {
+// json parsers
+// ArtistID3
+void from_json(const nlohmann::json &j, ArtistID3 &a) {
+    j.at("id").get_to(a.id);
+    j.at("name").get_to(a.name);
+    set_if_contains(j, "coverArt", a.coverArt);
+    set_if_contains(j, "artistImageUrl", a.artistImageUrl);
+    set_if_contains(j, "albumCount", a.albumCount);
+    set_if_contains(j, "userRating", a.userRating);
+    set_if_contains(j, "starred", a.starred);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "sortName", a.sortName);
+    set_if_contains(j, "roles", a.roles);
+}
+// IndexID3
+void from_json(const nlohmann::json &j, IndexID3 &i) {
+    j.at("name").get_to(i.name);
+    j.at("artist").get_to(i.artist);
+}
+
+// Artists
+void from_json(const nlohmann::json &j, Artists &a) {
+    j.at("ignoredArticles").get_to(a.ignoredArticles);
+    set_if_contains(j, "index", a.index);
+}
+} // namespace uboat::artist
 
 namespace uboat::misc {
 // json parsers

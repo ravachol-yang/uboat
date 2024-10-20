@@ -21,6 +21,13 @@ TEST_SUITE("Browsing") {
         }
     }
 
+    TEST_CASE("getArtists") {
+        SUBCASE("get all") {
+            auto result = client.getArtists();
+            CHECK(result.has_value());
+        }
+    }
+
     TEST_CASE("getAlbum") {
 
         auto result = client.getAlbumList2("random");

@@ -19,7 +19,6 @@
 
 #include <cstddef>
 #include <expected>
-#include <map>
 #include <nlohmann/detail/macro_scope.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -69,24 +68,19 @@ struct IndexID3 {
 };
 
 /// Artist list.
+/// https://opensubsonic.netlify.app/docs/responses/artists/
+struct Artists {
+    std::string ignoredArticles;
+    std::vector<IndexID3> index;
+};
+
+/// Artist list.
 /// https://opensubsonic.netlify.app/docs/responses/indexes/
 struct Indexes {
     std::string ignoredArticles;
     std::vector<IndexID3> index;
 };
 
-// Define types for json parsing
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ArtistID3, id, name, coverArt,
-                                   artistImageUrl, albumCount, userRating,
-                                   starred, musicBrainzId, sortName, roles)
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ArtistInfo2, biography, musicBrainzId,
-                                   lastFmUrl, smallImageUrl, mediumImageUrl,
-                                   largeImageUrl, similarArtist)
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(IndexID3, name, artist)
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Indexes, ignoredArticles, index)
 } // namespace artist
 
 namespace misc {
@@ -363,6 +357,11 @@ public:
     std::expected<server::License, server::Error> getLicense() const;
 
     // Browsing
+
+    /// Similar to getIndexes, but organizes music according to ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getartists/
+    /// \return Artists or Error
+    std::expected<artist::Artists, server::Error> getArtists() const;
 
     /// Returns details for an album, including a list of songs. This method
     /// organizes music according to ID3 tags.
