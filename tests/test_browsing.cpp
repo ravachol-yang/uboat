@@ -21,10 +21,19 @@ TEST_SUITE("Browsing") {
         }
     }
 
+    TEST_CASE("getGenres") {
+        SUBCASE("get all") {
+            auto result = client.getGenres();
+            CHECK(result.has_value());
+            CHECK_EQ(result.value().genre.size(), 2);
+        }
+    }
+
     TEST_CASE("getArtists") {
         SUBCASE("get all") {
             auto result = client.getArtists();
             CHECK(result.has_value());
+            CHECK_EQ(result.value().index.size(), 2);
         }
     }
 

@@ -92,6 +92,10 @@ struct Genre {
     std::size_t albumCount;
 };
 
+struct Genres {
+    std::vector<Genre> genre;
+};
+
 struct RecordLabel {
     std::string name;
 };
@@ -357,6 +361,12 @@ public:
     std::expected<server::License, server::Error> getLicense() const;
 
     // Browsing
+
+    /// Returns all genres
+    /// https://opensubsonic.netlify.app/docs/endpoints/getgenres/
+    /// \return A subsonic-response element with a nested genres element on
+    /// success.
+    std::expected<misc::Genres, server::Error> getGenres() const;
 
     /// Similar to getIndexes, but organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getartists/

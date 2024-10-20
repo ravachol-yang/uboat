@@ -104,6 +104,16 @@ std::expected<server::License, server::Error> OSClient::getLicense() const {
 
 // Browsing
 
+// Returns all genres
+std::expected<misc::Genres, server::Error> OSClient::getGenres() const {
+    auto response = get_req<misc::Genres>("getGenres", {}, "genres");
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // Similar to getIndexes, but organizes music according to ID3 tags.
 std::expected<artist::Artists, server::Error> OSClient::getArtists() const {
     auto response = get_req<artist::Artists>("getArtists", {}, "artists");
@@ -275,6 +285,11 @@ void from_json(const nlohmann::json &j, Artists &a) {
 
 namespace uboat::misc {
 // json parsers
+// Genres
+void from_json(const nlohmann::json &j, Genres &g) {
+    set_if_contains(j, "genre", g.genre);
+}
+
 // ItemDate
 void from_json(const nlohmann::json &j, ItemDate &i) {
     set_if_contains(j, "year", i.year);
