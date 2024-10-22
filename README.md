@@ -25,7 +25,7 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [x] [getAlbumInfo2](https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo2/)
 - [ ] [getSimilarSongs](https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs/)
 - [x] [getSimilarSongs2](https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs2/)
-- [ ] [getTopSongs](https://opensubsonic.netlify.app/docs/endpoints/gettopsongs/)
+- [x] [getTopSongs](https://opensubsonic.netlify.app/docs/endpoints/gettopsongs/)
 ## Album/song lists
 - [ ] [getAlbumList](https://opensubsonic.netlify.app/docs/endpoints/getalbumlist/)
 - [x] [getAlbumList2](https://opensubsonic.netlify.app/docs/endpoints/getalbumlist2/)

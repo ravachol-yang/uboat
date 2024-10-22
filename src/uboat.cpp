@@ -172,12 +172,27 @@ OSClient::getAlbumInfo2(const std::string &id) const {
         return std::unexpected(response.error());
 }
 
+// Returns a random collection of songs from the given artist and similar
+// artists.
 std::expected<media::SimilarSongs2, server::Error>
 OSClient::getSimilarSongs2(const std::string &id,
                            const std::string &count) const {
     auto response = get_req<media::SimilarSongs2>(
         "getSimilarSongs2", {{"id", id}, {"count", count}}, "similarSongs2");
 
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns top songs for the given artist.
+std::expected<media::TopSongs, server::Error>
+OSClient::getTopSongs(const std::string &artist,
+                      const std::string &count) const {
+    auto response = get_req<media::TopSongs>(
+        "getTopSongs", {{"artist", artist}, {"count", count}}, "topSongs");
     // extract data
     if (response)
         return check(response.value());
@@ -445,6 +460,11 @@ void from_json(const nlohmann::json &j, NowPlaying &n) {
 // SimilarSongs2
 void from_json(const nlohmann::json &j, SimilarSongs2 &s) {
     set_if_contains(j, "song", s.song);
+}
+
+// TopSongs
+void from_json(const nlohmann::json &j, TopSongs &t) {
+    set_if_contains(j, "song", t.song);
 }
 } // namespace uboat::media
 

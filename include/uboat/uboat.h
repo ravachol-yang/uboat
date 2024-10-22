@@ -221,6 +221,12 @@ struct SimilarSongs2 {
     std::vector<Child> song;
 };
 
+/// TopSongs list.
+/// https://opensubsonic.netlify.app/docs/responses/topsongs/
+struct TopSongs {
+    std::vector<Child> song;
+};
+
 // json parser
 // Child
 void from_json(const nlohmann::json &j, Child &c);
@@ -436,6 +442,18 @@ public:
     std::expected<media::SimilarSongs2, server::Error>
     getSimilarSongs2(const std::string &id,
                      const std::string &count = "") const;
+
+    /// Returns top songs for the given artist.
+    /// Returns top songs for the given artist, using data from last.fm
+    /// https://opensubsonic.netlify.app/docs/endpoints/gettopsongs/
+    ///
+    /// \param artist The artist name.
+    /// \param Max number of songs to return
+    ///
+    /// \return A subsonic-response element with a nested topSongs element on
+    /// success.
+    std::expected<media::TopSongs, server::Error>
+    getTopSongs(const std::string &artist, const std::string &count = "") const;
 
     // Album/song lists
 

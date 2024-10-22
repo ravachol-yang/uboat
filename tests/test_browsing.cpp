@@ -114,4 +114,15 @@ TEST_SUITE("Browsing") {
 
         CHECK(result.has_value());
     }
+
+    TEST_CASE("getTopSongs") {
+        auto songs = client.getRandomSongs();
+        REQUIRE(songs.has_value());
+
+        auto artist = songs.value().song.at(0).artist;
+
+        auto result = client.getTopSongs(artist);
+
+        CHECK(result.has_value());
+    }
 }
