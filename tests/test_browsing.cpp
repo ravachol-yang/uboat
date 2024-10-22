@@ -103,4 +103,15 @@ TEST_SUITE("Browsing") {
             CHECK_EQ(result.error().code, 70);
         }
     }
+
+    TEST_CASE("getSimilarSongs2") {
+        auto songs = client.getRandomSongs();
+        REQUIRE(songs.has_value());
+
+        auto id = songs.value().song.at(0).id;
+
+        auto result = client.getSimilarSongs2(id);
+
+        CHECK(result.has_value());
+    }
 }

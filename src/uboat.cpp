@@ -172,6 +172,19 @@ OSClient::getAlbumInfo2(const std::string &id) const {
         return std::unexpected(response.error());
 }
 
+std::expected<media::SimilarSongs2, server::Error>
+OSClient::getSimilarSongs2(const std::string &id,
+                           const std::string &count) const {
+    auto response = get_req<media::SimilarSongs2>(
+        "getSimilarSongs2", {{"id", id}, {"count", count}}, "similarSongs2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // Album/song lists
 // Returns a list of random, newest, highest rated etc. albums.
 std::expected<album::AlbumList2, server::Error>
@@ -427,6 +440,11 @@ void from_json(const nlohmann::json &j, RandomSongs &r) {
 // NowPlaying
 void from_json(const nlohmann::json &j, NowPlaying &n) {
     set_if_contains(j, "entry", n.entry);
+}
+
+// SimilarSongs2
+void from_json(const nlohmann::json &j, SimilarSongs2 &s) {
+    set_if_contains(j, "song", s.song);
 }
 } // namespace uboat::media
 

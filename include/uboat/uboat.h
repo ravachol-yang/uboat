@@ -215,6 +215,12 @@ struct NowPlaying {
     std::vector<NowPlayingEntry> entry;
 };
 
+/// SimilarSongs2 list.
+/// https://opensubsonic.netlify.app/docs/responses/similarsongs2/
+struct SimilarSongs2 {
+    std::vector<Child> song;
+};
+
 // json parser
 // Child
 void from_json(const nlohmann::json &j, Child &c);
@@ -416,6 +422,20 @@ public:
     /// success.
     std::expected<album::AlbumInfo, server::Error>
     getAlbumInfo2(const std::string &id) const;
+
+    /// Returns a random collection of songs from the given artist and similar
+    /// artists. Similar to getSimilarSongs, but organizes music according to
+    /// ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs2/
+    ///
+    /// \param id The artist ID.
+    /// \param count Max number of songs to return.
+    ///
+    /// \return A subsonic-response element with a nested similarSongs2 element
+    /// on success.
+    std::expected<media::SimilarSongs2, server::Error>
+    getSimilarSongs2(const std::string &id,
+                     const std::string &count = "") const;
 
     // Album/song lists
 
