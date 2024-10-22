@@ -82,4 +82,25 @@ TEST_SUITE("Browsing") {
             CHECK_EQ(result.error().code, 70);
         }
     }
+
+    TEST_CASE("getAlbumInfo2") {
+        auto result = client.getAlbumList2("random");
+
+        REQUIRE(result.has_value());
+
+        auto albums = result.value().album;
+
+        SUBCASE("with id") {
+            auto id = albums.at(0).id;
+            auto result = client.getAlbumInfo2(id);
+            CHECK(result.has_value());
+        }
+
+        SUBCASE("with wrong id") {
+            auto id = "wrong";
+            auto result = client.getAlbumInfo2(id);
+            CHECK_FALSE(result.has_value());
+            CHECK_EQ(result.error().code, 70);
+        }
+    }
 }

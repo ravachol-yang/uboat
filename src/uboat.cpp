@@ -139,6 +139,8 @@ OSClient::getAlbum(const std::string &id) const {
         return std::unexpected(response.error());
 }
 
+// Returns artist info.
+// Similar to getArtistInfo, but organizes music according to ID3 tags.
 std::expected<artist::ArtistInfo2, server::Error>
 OSClient::getArtistInfo2(const std::string &id, const std::string &count,
                          const std::string &includeNotPresent) const {
@@ -148,6 +150,20 @@ OSClient::getArtistInfo2(const std::string &id, const std::string &count,
 
     auto response =
         get_req<artist::ArtistInfo2>("getArtistInfo2", params, "artistInfo2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns album info.
+// Similar to getAlbumInfo, but organizes music according to ID3 tags.
+std::expected<album::AlbumInfo, server::Error>
+OSClient::getAlbumInfo2(const std::string &id) const {
+    auto response =
+        get_req<album::AlbumInfo>("getAlbumInfo2", {{"id", id}}, "albumInfo");
 
     // extract data
     if (response)
@@ -175,8 +191,8 @@ OSClient::getAlbumList2(const std::string &type, const std::string &size,
 
     // extract data
     if (response) {
-        return check(response.value()); }
-    else
+        return check(response.value());
+    } else
         return std::unexpected(response.error());
 }
 
@@ -454,6 +470,16 @@ void from_json(const nlohmann::json &j, AlbumID3 &a) {
 void from_json(const nlohmann::json &j, AlbumID3WithSongs &a) {
     from_json(j, static_cast<AlbumID3 &>(a));
     set_if_contains(j, "song", a.song);
+}
+
+// AlbumInfo
+void from_json(const nlohmann::json &j, AlbumInfo &a) {
+    set_if_contains(j, "notes", a.notes);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "lastFmUrl", a.lastFmUrl);
+    set_if_contains(j, "smallImageUrl", a.smallImageUrl);
+    set_if_contains(j, "mediumImageUrl", a.mediumImageUrl);
+    set_if_contains(j, "largeImageUrl", a.largeImageUrl);
 }
 
 // AlbumList2

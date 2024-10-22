@@ -266,6 +266,17 @@ struct AlbumID3WithSongs : AlbumID3 {
     std::vector<media::Child> song;
 };
 
+/// Album info
+/// https://opensubsonic.netlify.app/docs/responses/albuminfo/
+struct AlbumInfo {
+    std::string notes;
+    std::string musicBrainzId;
+    std::string lastFmUrl;
+    std::string smallImageUrl;
+    std::string mediumImageUrl;
+    std::string largeImageUrl;
+};
+
 struct AlbumList2 {
     std::vector<AlbumID3> album;
 };
@@ -390,10 +401,21 @@ public:
     /// \param count Max number of similar artists to return.
     /// \param includeNotPresent Whether to return artists that are not present
     /// in the media library.
-    /// \return A subsonic-response element with a nested artistInfo2 element on success.
+    /// \return A subsonic-response element with a nested artistInfo2 element on
+    /// success.
     std::expected<artist::ArtistInfo2, server::Error>
     getArtistInfo2(const std::string &id, const std::string &count = "",
                    const std::string &includeNotPresent = "false") const;
+
+    /// Returns album info.
+    /// Similar to getAlbumInfo, but organizes music according to ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo2/
+    ///
+    /// \param id The album ID or song ID.
+    /// \return A subsonic-response element with a nested albumInfo element on
+    /// success.
+    std::expected<album::AlbumInfo, server::Error>
+    getAlbumInfo2(const std::string &id) const;
 
     // Album/song lists
 

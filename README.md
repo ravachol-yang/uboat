@@ -22,7 +22,7 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [ ] [getArtistInfo](https://opensubsonic.netlify.app/docs/endpoints/getartistinfo/)
 - [x] [getArtistInfo2](https://opensubsonic.netlify.app/docs/endpoints/getartistinfo2/)
 - [ ] [getAlbumInfo](https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo/)
-- [ ] [getAlbumInfo2](https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo2/)
+- [x] [getAlbumInfo2](https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo2/)
 - [ ] [getSimilarSongs](https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs/)
 - [ ] [getSimilarSongs2](https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs2/)
 - [ ] [getTopSongs](https://opensubsonic.netlify.app/docs/endpoints/gettopsongs/)
