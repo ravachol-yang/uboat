@@ -19,7 +19,6 @@
 
 #include <cstddef>
 #include <expected>
-#include <map>
 #include <nlohmann/detail/macro_scope.hpp>
 #include <nlohmann/json.hpp>
 #include <string>
@@ -69,24 +68,19 @@ struct IndexID3 {
 };
 
 /// Artist list.
+/// https://opensubsonic.netlify.app/docs/responses/artists/
+struct Artists {
+    std::string ignoredArticles;
+    std::vector<IndexID3> index;
+};
+
+/// Artist list.
 /// https://opensubsonic.netlify.app/docs/responses/indexes/
 struct Indexes {
     std::string ignoredArticles;
     std::vector<IndexID3> index;
 };
 
-// Define types for json parsing
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ArtistID3, id, name, coverArt,
-                                   artistImageUrl, albumCount, userRating,
-                                   starred, musicBrainzId, sortName, roles)
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ArtistInfo2, biography, musicBrainzId,
-                                   lastFmUrl, smallImageUrl, mediumImageUrl,
-                                   largeImageUrl, similarArtist)
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(IndexID3, name, artist)
-
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Indexes, ignoredArticles, index)
 } // namespace artist
 
 namespace misc {
@@ -96,6 +90,10 @@ struct Genre {
     std::string value;
     std::size_t songCount;
     std::size_t albumCount;
+};
+
+struct Genres {
+    std::vector<Genre> genre;
 };
 
 struct RecordLabel {
@@ -129,10 +127,12 @@ struct ReplayGain {
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Genre, value, songCount, albumCount)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(RecordLabel, name)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemGenre, name)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ItemDate, year, month, day)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DiscTitle, disc, title)
 
 // json parsers
+// ItemDate
+void from_json(const nlohmann::json &j, ItemDate &i);
+
 // ReplayGain
 void from_json(const nlohmann::json &j, ReplayGain &r);
 
@@ -215,6 +215,18 @@ struct NowPlaying {
     std::vector<NowPlayingEntry> entry;
 };
 
+/// SimilarSongs2 list.
+/// https://opensubsonic.netlify.app/docs/responses/similarsongs2/
+struct SimilarSongs2 {
+    std::vector<Child> song;
+};
+
+/// TopSongs list.
+/// https://opensubsonic.netlify.app/docs/responses/topsongs/
+struct TopSongs {
+    std::vector<Child> song;
+};
+
 // json parser
 // Child
 void from_json(const nlohmann::json &j, Child &c);
@@ -266,6 +278,17 @@ struct AlbumID3WithSongs : AlbumID3 {
     std::vector<media::Child> song;
 };
 
+/// Album info
+/// https://opensubsonic.netlify.app/docs/responses/albuminfo/
+struct AlbumInfo {
+    std::string notes;
+    std::string musicBrainzId;
+    std::string lastFmUrl;
+    std::string smallImageUrl;
+    std::string mediumImageUrl;
+    std::string largeImageUrl;
+};
+
 struct AlbumList2 {
     std::vector<AlbumID3> album;
 };
@@ -273,6 +296,9 @@ struct AlbumList2 {
 // json parsers
 // AlbumID3
 void from_json(const nlohmann::json &j, AlbumID3 &a);
+
+// AlbumID3WithSongs
+void from_json(const nlohmann::json &j, AlbumID3WithSongs &a);
 
 // AlbumList2
 void from_json(const nlohmann::json &j, AlbumList2 &a);
@@ -359,6 +385,17 @@ public:
 
     // Browsing
 
+    /// Returns all genres
+    /// https://opensubsonic.netlify.app/docs/endpoints/getgenres/
+    /// \return A subsonic-response element with a nested genres element on
+    /// success.
+    std::expected<misc::Genres, server::Error> getGenres() const;
+
+    /// Similar to getIndexes, but organizes music according to ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getartists/
+    /// \return Artists or Error
+    std::expected<artist::Artists, server::Error> getArtists() const;
+
     /// Returns details for an album, including a list of songs. This method
     /// organizes music according to ID3 tags.
     /// https://opensubsonic.netlify.app/docs/endpoints/getalbum/
@@ -367,6 +404,56 @@ public:
     /// \return returns an ablum and songs on success and error on failure
     std::expected<album::AlbumID3WithSongs, server::Error>
     getAlbum(const std::string &id) const;
+
+    /// Returns artist info.
+    /// Similar to getArtistInfo, but organizes music according to ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getartistinfo2/
+    ///
+    /// \param id The artist, album or song ID.
+    /// \param count Max number of similar artists to return.
+    /// \param includeNotPresent Whether to return artists that are not present
+    /// in the media library.
+    /// \return A subsonic-response element with a nested artistInfo2 element on
+    /// success.
+    std::expected<artist::ArtistInfo2, server::Error>
+    getArtistInfo2(const std::string &id, const std::string &count = "",
+                   const std::string &includeNotPresent = "false") const;
+
+    /// Returns album info.
+    /// Similar to getAlbumInfo, but organizes music according to ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getalbuminfo2/
+    ///
+    /// \param id The album ID or song ID.
+    /// \return A subsonic-response element with a nested albumInfo element on
+    /// success.
+    std::expected<album::AlbumInfo, server::Error>
+    getAlbumInfo2(const std::string &id) const;
+
+    /// Returns a random collection of songs from the given artist and similar
+    /// artists. Similar to getSimilarSongs, but organizes music according to
+    /// ID3 tags.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getsimilarsongs2/
+    ///
+    /// \param id The artist ID.
+    /// \param count Max number of songs to return.
+    ///
+    /// \return A subsonic-response element with a nested similarSongs2 element
+    /// on success.
+    std::expected<media::SimilarSongs2, server::Error>
+    getSimilarSongs2(const std::string &id,
+                     const std::string &count = "") const;
+
+    /// Returns top songs for the given artist.
+    /// Returns top songs for the given artist, using data from last.fm
+    /// https://opensubsonic.netlify.app/docs/endpoints/gettopsongs/
+    ///
+    /// \param artist The artist name.
+    /// \param Max number of songs to return
+    ///
+    /// \return A subsonic-response element with a nested topSongs element on
+    /// success.
+    std::expected<media::TopSongs, server::Error>
+    getTopSongs(const std::string &artist, const std::string &count = "") const;
 
     // Album/song lists
 

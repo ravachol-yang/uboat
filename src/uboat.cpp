@@ -11,6 +11,7 @@
 #include <map>
 #include <nlohmann/json_fwd.hpp>
 #include <openssl/evp.h>
+#include <ostream>
 #include <random>
 #include <sstream>
 #include <string>
@@ -103,11 +104,100 @@ std::expected<server::License, server::Error> OSClient::getLicense() const {
 }
 
 // Browsing
+
+// Returns all genres
+std::expected<misc::Genres, server::Error> OSClient::getGenres() const {
+    auto response = get_req<misc::Genres>("getGenres", {}, "genres");
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Similar to getIndexes, but organizes music according to ID3 tags.
+std::expected<artist::Artists, server::Error> OSClient::getArtists() const {
+    auto response = get_req<artist::Artists>("getArtists", {}, "artists");
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns details for an album, including a list of songs. This method
+// organizes music according to ID3 tags.
 std::expected<album::AlbumID3WithSongs, server::Error>
 OSClient::getAlbum(const std::string &id) const {
     auto response =
-        get_req<album::AlbumID3WithSongs>("getAlbum", {{"id", id}}, "albums");
-    return {};
+        get_req<album::AlbumID3WithSongs>("getAlbum", {{"id", id}}, "album");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns artist info.
+// Similar to getArtistInfo, but organizes music according to ID3 tags.
+std::expected<artist::ArtistInfo2, server::Error>
+OSClient::getArtistInfo2(const std::string &id, const std::string &count,
+                         const std::string &includeNotPresent) const {
+    // make params
+    std::map<std::string, std::string> params{
+        {"id", id}, {"count", count}, {"includeNotPresent", includeNotPresent}};
+
+    auto response =
+        get_req<artist::ArtistInfo2>("getArtistInfo2", params, "artistInfo2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns album info.
+// Similar to getAlbumInfo, but organizes music according to ID3 tags.
+std::expected<album::AlbumInfo, server::Error>
+OSClient::getAlbumInfo2(const std::string &id) const {
+    auto response =
+        get_req<album::AlbumInfo>("getAlbumInfo2", {{"id", id}}, "albumInfo");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns a random collection of songs from the given artist and similar
+// artists.
+std::expected<media::SimilarSongs2, server::Error>
+OSClient::getSimilarSongs2(const std::string &id,
+                           const std::string &count) const {
+    auto response = get_req<media::SimilarSongs2>(
+        "getSimilarSongs2", {{"id", id}, {"count", count}}, "similarSongs2");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Returns top songs for the given artist.
+std::expected<media::TopSongs, server::Error>
+OSClient::getTopSongs(const std::string &artist,
+                      const std::string &count) const {
+    auto response = get_req<media::TopSongs>(
+        "getTopSongs", {{"artist", artist}, {"count", count}}, "topSongs");
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
 }
 
 // Album/song lists
@@ -128,9 +218,9 @@ OSClient::getAlbumList2(const std::string &type, const std::string &size,
         get_req<album::AlbumList2>("getAlbumList2", params, "albumList2");
 
     // extract data
-    if (response)
+    if (response) {
         return check(response.value());
-    else
+    } else
         return std::unexpected(response.error());
 }
 
@@ -227,10 +317,59 @@ OSClient::check(server::SubsonicResponse<Data> &r) const {
         return std::unexpected(r.error);
 }
 
+namespace uboat::artist {
+// json parsers
+// ArtistID3
+void from_json(const nlohmann::json &j, ArtistID3 &a) {
+    j.at("id").get_to(a.id);
+    j.at("name").get_to(a.name);
+    set_if_contains(j, "coverArt", a.coverArt);
+    set_if_contains(j, "artistImageUrl", a.artistImageUrl);
+    set_if_contains(j, "albumCount", a.albumCount);
+    set_if_contains(j, "userRating", a.userRating);
+    set_if_contains(j, "starred", a.starred);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "sortName", a.sortName);
+    set_if_contains(j, "roles", a.roles);
+}
+// ArtistInfo2
+void from_json(const nlohmann::json &j, ArtistInfo2 &a) {
+    set_if_contains(j, "biography", a.biography);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "lastFmUrl", a.lastFmUrl);
+    set_if_contains(j, "smallImageUrl", a.smallImageUrl);
+    set_if_contains(j, "mediumImageUrl", a.mediumImageUrl);
+    set_if_contains(j, "largeImageUrl", a.largeImageUrl);
+    set_if_contains(j, "similarArtist", a.similarArtist);
+}
+// IndexID3
+void from_json(const nlohmann::json &j, IndexID3 &i) {
+    j.at("name").get_to(i.name);
+    j.at("artist").get_to(i.artist);
+}
+
+// Artists
+void from_json(const nlohmann::json &j, Artists &a) {
+    j.at("ignoredArticles").get_to(a.ignoredArticles);
+    set_if_contains(j, "index", a.index);
+}
+} // namespace uboat::artist
+
 namespace uboat::misc {
 // json parsers
-// ReplayGain
+// Genres
+void from_json(const nlohmann::json &j, Genres &g) {
+    set_if_contains(j, "genre", g.genre);
+}
 
+// ItemDate
+void from_json(const nlohmann::json &j, ItemDate &i) {
+    set_if_contains(j, "year", i.year);
+    set_if_contains(j, "month", i.month);
+    set_if_contains(j, "day", i.day);
+}
+
+// ReplayGain
 void from_json(const nlohmann::json &j, ReplayGain &r) {
     set_if_contains(j, "trackGain", r.trackGain);
     set_if_contains(j, "albumGain", r.albumGain);
@@ -317,6 +456,16 @@ void from_json(const nlohmann::json &j, RandomSongs &r) {
 void from_json(const nlohmann::json &j, NowPlaying &n) {
     set_if_contains(j, "entry", n.entry);
 }
+
+// SimilarSongs2
+void from_json(const nlohmann::json &j, SimilarSongs2 &s) {
+    set_if_contains(j, "song", s.song);
+}
+
+// TopSongs
+void from_json(const nlohmann::json &j, TopSongs &t) {
+    set_if_contains(j, "song", t.song);
+}
 } // namespace uboat::media
 
 namespace uboat::album {
@@ -353,6 +502,22 @@ void from_json(const nlohmann::json &j, AlbumID3 &a) {
     set_if_contains(j, "rCeleaseDate", a.releaseDate);
     set_if_contains(j, "isCompilation", a.isCompilation);
     set_if_contains(j, "discTitles", a.discTitles);
+}
+
+// AlbumID3WithSongs
+void from_json(const nlohmann::json &j, AlbumID3WithSongs &a) {
+    from_json(j, static_cast<AlbumID3 &>(a));
+    set_if_contains(j, "song", a.song);
+}
+
+// AlbumInfo
+void from_json(const nlohmann::json &j, AlbumInfo &a) {
+    set_if_contains(j, "notes", a.notes);
+    set_if_contains(j, "musicBrainzId", a.musicBrainzId);
+    set_if_contains(j, "lastFmUrl", a.lastFmUrl);
+    set_if_contains(j, "smallImageUrl", a.smallImageUrl);
+    set_if_contains(j, "mediumImageUrl", a.mediumImageUrl);
+    set_if_contains(j, "largeImageUrl", a.largeImageUrl);
 }
 
 // AlbumList2
