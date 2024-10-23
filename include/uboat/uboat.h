@@ -539,6 +539,62 @@ public:
         const std::string &songCount = "", const std::string &songOffset = "",
         const std::string &musicFolderId = "") const;
 
+    // Media annotation
+
+    /// Attaches a star to a song, album or artist.
+    /// https://opensubsonic.netlify.app/docs/endpoints/star/
+    ///
+    /// \param id The ID of the file (song) or folder (album/artist) to star.
+    /// Multiple parameters allowed. \param albumId The ID of an album to star.
+    /// Use this rather than id if the client accesses the media collection
+    /// according to ID3 tags rather than file structure. Multiple parameters
+    /// allowed.
+    ///
+    /// \param artistId The ID of an artist to star
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    star(const std::string &id = "", const std::string &albumId = "",
+         const std::string &artistId = "") const;
+
+    /// Removes a star to a song, album or artist
+    /// https://opensubsonic.netlify.app/docs/endpoints/unstar/
+    ///
+    /// \param id
+    /// \param albumId
+    /// \param artistId
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    unstar(const std::string &id = "", const std::string &albumId = "",
+           const std::string &artistId = "") const;
+
+    /// Sets the rating for a music file.
+    /// https://opensubsonic.netlify.app/docs/endpoints/setrating/
+    ///
+    /// \param id A string which uniquely identifies the file (song) or folder
+    /// (album/artist) to rate.
+    /// \param rating The rating between 1 and 5 (inclusive), or 0 to remove the
+    /// rating.
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    setRating(const std::string &id, const std::string &rating) const;
+
+    /// Registers the local playback of one or more media files.
+    /// https://opensubsonic.netlify.app/docs/endpoints/scrobble/
+    ///
+    /// \param id A string which uniquely identifies the file to scrobble.
+    /// \param time The time (in milliseconds since 1 Jan 1970) at which the
+    /// song was listened to.
+    /// \param submission Whether this is a “submission” or a “now playing”
+    /// notification.
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    scrobble(const std::string &id, const std::string &time = "",
+             const std::string &submission = "") const;
+
 private:
     // client information:
     std::string m_server_url; /* url of the server, without trailing "/" */
