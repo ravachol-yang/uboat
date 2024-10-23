@@ -287,6 +287,43 @@ OSClient::search3(const std::string &query, const std::string &artistCount,
         return std::unexpected(response.error());
 }
 
+// Media annotation
+// Attaches a star to a song, album or artist.
+std::expected<server::SubsonicResponse<server::Error>, server::Error>
+OSClient::star(const std::string &id, const std::string &albumId,
+               const std::string &artistId) const {
+    // make params
+    std::map<std::string, std::string> params{
+        {"id", id}, {"albumId", albumId}, {"artistId", artistId}};
+
+    auto response = get_req<server::SubsonicResponse<server::Error>>(
+        "star", params, "error");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Removes a star to a song, album or artist.
+std::expected<server::SubsonicResponse<server::Error>, server::Error>
+OSClient::unstar(const std::string &id, const std::string &albumId,
+               const std::string &artistId) const {
+    // make params
+    std::map<std::string, std::string> params{
+        {"id", id}, {"albumId", albumId}, {"artistId", artistId}};
+
+    auto response = get_req<server::SubsonicResponse<server::Error>>(
+        "unstar", params, "error");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // private
 /// helper for GET requests
 template <class Data>

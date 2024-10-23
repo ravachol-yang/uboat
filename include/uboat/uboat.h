@@ -539,6 +539,36 @@ public:
         const std::string &songCount = "", const std::string &songOffset = "",
         const std::string &musicFolderId = "") const;
 
+    // Media annotation
+
+    /// Attaches a star to a song, album or artist.
+    /// https://opensubsonic.netlify.app/docs/endpoints/star/
+    ///
+    /// \param id The ID of the file (song) or folder (album/artist) to star.
+    /// Multiple parameters allowed. \param albumId The ID of an album to star.
+    /// Use this rather than id if the client accesses the media collection
+    /// according to ID3 tags rather than file structure. Multiple parameters
+    /// allowed.
+    ///
+    /// \param artistId The ID of an artist to star
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    star(const std::string &id = "", const std::string &albumId = "",
+         const std::string &artistId = "") const;
+
+    /// Removes a star to a song, album or artist
+    /// https://opensubsonic.netlify.app/docs/endpoints/unstar/
+    ///
+    /// \param id
+    /// \param albumId
+    /// \param artistId
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    unstar(const std::string &id = "", const std::string &albumId = "",
+           const std::string &artistId = "") const;
+
 private:
     // client information:
     std::string m_server_url; /* url of the server, without trailing "/" */
