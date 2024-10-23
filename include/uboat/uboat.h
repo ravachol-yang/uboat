@@ -304,6 +304,16 @@ void from_json(const nlohmann::json &j, AlbumID3WithSongs &a);
 void from_json(const nlohmann::json &j, AlbumList2 &a);
 } // namespace album
 
+namespace search {
+// search3 result.
+// https://opensubsonic.netlify.app/docs/responses/searchresult3/
+struct SearchResult3 {
+    std::vector<artist::ArtistID3> artist;
+    std::vector<album::AlbumID3> album;
+    std::vector<media::Child> song;
+};
+} // namespace search
+
 namespace server {
 
 /// Error
@@ -502,6 +512,32 @@ public:
     ///
     /// \return Nowplaying or Error
     std::expected<media::NowPlaying, server::Error> getNowPlaying() const;
+
+    // Searching
+
+    /// Returns albums, artists and songs matching the given search criteria.
+    /// Supports paging through the result. Music is organized according to ID3
+    /// tags
+    /// https://opensubsonic.netlify.app/docs/endpoints/search3/
+    ///
+    /// \param query Search query. Returns all on empty query
+    /// \param artistCount Maximum number of artists to return.
+    /// \param artistOffset Search result offset for artists. Used for paging.
+    /// \param albumCount Maximum number of albums to return.
+    /// \param albumOffset Search result offset for albums. Used for paging.
+    /// \param SongCount Maximum number of songs to return.
+    /// \param SongOffset Search result offset for songs. Used for paging.
+    /// \param musicFolderId Only return results from music folder with the
+    /// given ID.
+    ///
+    /// \return A subsonic-response with a nested searchResult3 element on
+    /// success.
+    std::expected<search::SearchResult3, server::Error> search3(
+        const std::string &query, const std::string &artistCount = "",
+        const std::string &artistOffset = "",
+        const std::string &albumCount = "", const std::string &albumOffset = "",
+        const std::string &songCount = "", const std::string &songOffset = "",
+        const std::string &musicFolderId = "") const;
 
 private:
     // client information:

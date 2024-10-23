@@ -259,6 +259,34 @@ OSClient::getNowPlaying() const {
         return std::unexpected(response.error());
 }
 
+// Searching
+// Returns albums, artists and songs matching the given search criteria.
+std::expected<search::SearchResult3, server::Error>
+OSClient::search3(const std::string &query, const std::string &artistCount,
+                  const std::string &artistOffset,
+                  const std::string &albumCount, const std::string &albumOffset,
+                  const std::string &songCount, const std::string &songOffset,
+                  const std::string &musicFolderId) const {
+    // make params
+    std::map<std::string, std::string> params{{"query", query},
+                                              {"artistCount", artistCount},
+                                              {"artistOffset", artistOffset},
+                                              {"albumCount", albumCount},
+                                              {"albumOffset", albumOffset},
+                                              {"songCount", songCount},
+                                              {"songOffset", songOffset},
+                                              {"musicFolderId", musicFolderId}};
+
+    auto response =
+        get_req<search::SearchResult3>("search3", params, "searchResult3");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // private
 /// helper for GET requests
 template <class Data>
@@ -525,6 +553,16 @@ void from_json(const nlohmann::json &j, AlbumList2 &a) {
     set_if_contains(j, "album", a.album);
 }
 } // namespace uboat::album
+
+namespace uboat::search {
+
+// SearchResult3
+void from_json(const nlohmann::json &j, SearchResult3 &s) {
+    set_if_contains(j, "artist", s.artist);
+    set_if_contains(j, "album", s.album);
+    set_if_contains(j, "song", s.song);
+}
+} // namespace uboat::search
 
 namespace uboat::server {
 // json parsers

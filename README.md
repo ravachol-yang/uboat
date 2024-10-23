@@ -34,3 +34,7 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [x] [getNowPlaying](https://opensubsonic.netlify.app/docs/endpoints/getnowplaying/)
 - [ ] [getStarred](https://opensubsonic.netlify.app/docs/endpoints/getstarred/)
 - [ ] [getStarred2](https://opensubsonic.netlify.app/docs/endpoints/getstarred2/)
+## Searching
+- [ ] [search](https://opensubsonic.netlify.app/docs/endpoints/search/)
+- [ ] [search2](https://opensubsonic.netlify.app/docs/endpoints/search2/)
+- [x] [search3](https://opensubsonic.netlify.app/docs/endpoints/search3/)
