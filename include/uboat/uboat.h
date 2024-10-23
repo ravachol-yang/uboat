@@ -569,6 +569,18 @@ public:
     unstar(const std::string &id = "", const std::string &albumId = "",
            const std::string &artistId = "") const;
 
+    /// Sets the rating for a music file.
+    /// https://opensubsonic.netlify.app/docs/endpoints/setrating/
+    ///
+    /// \param id A string which uniquely identifies the file (song) or folder
+    /// (album/artist) to rate.
+    /// \param rating The rating between 1 and 5 (inclusive), or 0 to remove the
+    /// rating.
+    ///
+    /// \return An empty subsonic-response element on success.
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    setRating(const std::string &id, const std::string &rating) const;
+
 private:
     // client information:
     std::string m_server_url; /* url of the server, without trailing "/" */

@@ -309,13 +309,30 @@ OSClient::star(const std::string &id, const std::string &albumId,
 // Removes a star to a song, album or artist.
 std::expected<server::SubsonicResponse<server::Error>, server::Error>
 OSClient::unstar(const std::string &id, const std::string &albumId,
-               const std::string &artistId) const {
+                 const std::string &artistId) const {
     // make params
     std::map<std::string, std::string> params{
         {"id", id}, {"albumId", albumId}, {"artistId", artistId}};
 
     auto response = get_req<server::SubsonicResponse<server::Error>>(
         "unstar", params, "error");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Sets the rating for a music file.
+std::expected<server::SubsonicResponse<server::Error>, server::Error>
+OSClient::setRating(const std::string &id, const std::string &rating) const {
+
+    // make params
+    std::map<std::string, std::string> params{{"id", id}, {"rating", rating}};
+
+    auto response = get_req<server::SubsonicResponse<server::Error>>(
+        "setRating", params, "error");
 
     // extract data
     if (response)

@@ -65,4 +65,36 @@ TEST_SUITE("Media annotation") {
             CHECK_EQ(album.value().starred, "");
         }
     }
+
+    TEST_CASE("setRating") {
+        auto searchResult = client.search3("");
+
+        REQUIRE(searchResult.has_value());
+
+        auto album = searchResult.value().album.at(0);
+
+        SUBCASE("rating") {
+            auto result = client.setRating(album.id, "5");
+
+            CHECK(result.has_value());
+
+            auto rated = client.getAlbum(album.id);
+
+            CHECK(rated.has_value());
+
+            CHECK_EQ(rated.value().userRating, 5);
+        }
+
+        SUBCASE("remove rating") {
+            auto result = client.setRating(album.id, "0");
+
+            CHECK(result.has_value());
+
+            auto removed = client.getAlbum(album.id);
+
+            CHECK(removed.has_value());
+
+            CHECK_EQ(removed.value().userRating, 0);
+        }
+    }
 }
