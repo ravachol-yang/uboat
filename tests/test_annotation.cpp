@@ -97,4 +97,24 @@ TEST_SUITE("Media annotation") {
             CHECK_EQ(removed.value().userRating, 0);
         }
     }
+
+    TEST_CASE("scrobble") {
+        auto searchResult = client.search3("");
+
+        REQUIRE(searchResult.has_value());
+
+        auto song = searchResult.value().song.at(0);
+
+        SUBCASE("srcobble once") {
+            auto result = client.scrobble(song.id);
+
+            CHECK(result.has_value());
+
+            auto songAfter = client.search3("").value().song.at(0);
+
+            REQUIRE_EQ(song.id, songAfter.id);
+
+            CHECK_EQ(songAfter.playCount, song.playCount + 1);
+        }
+    }
 }

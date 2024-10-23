@@ -341,6 +341,24 @@ OSClient::setRating(const std::string &id, const std::string &rating) const {
         return std::unexpected(response.error());
 }
 
+// Registers the local playback of one or more media files.
+std::expected<server::SubsonicResponse<server::Error>, server::Error>
+OSClient::scrobble(const std::string &id, const std::string &time,
+                   const std::string &submission) const {
+    // make params
+    std::map<std::string, std::string> params{
+        {"id", id}, {"time", time}, {"submission", submission}};
+
+    auto response = get_req<server::SubsonicResponse<server::Error>>(
+        "scrobble", params, "error");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // private
 /// helper for GET requests
 template <class Data>

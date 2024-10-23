@@ -42,4 +42,4 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [x] [star](https://opensubsonic.netlify.app/docs/endpoints/star/)
 - [x] [unstar](https://opensubsonic.netlify.app/docs/endpoints/unstar/)
 - [x] [setRating](https://opensubsonic.netlify.app/docs/endpoints/setrating/)
-- [ ] [scrobble](https://opensubsonic.netlify.app/docs/endpoints/scrobble/)
+- [x] [scrobble](https://opensubsonic.netlify.app/docs/endpoints/scrobble/)
