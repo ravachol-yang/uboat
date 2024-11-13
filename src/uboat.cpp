@@ -289,6 +289,23 @@ OSClient::search3(const std::string &query, const std::string &artistCount,
 }
 
 // Playlists
+// Returns a listing of files in a saved playlist.
+std::expected<playlist::PlaylistWithSongs, server::Error>
+OSClient::getPlaylist(const std::string &id) const {
+
+    // make params
+    std::multimap<std::string, std::string> params{{"id", id}};
+
+    auto response =
+        get_req<playlist::PlaylistWithSongs>("getPlaylist", params, "playlist");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
 // Returns all playlists a user is allowed to play.
 std::expected<playlist::Playlists, server::Error>
 OSClient::getPlaylists(const std::string &username) const {
@@ -303,7 +320,8 @@ OSClient::getPlaylists(const std::string &username) const {
     if (response)
         return check(response.value());
     else
-        return std::unexpected(response.error());;
+        return std::unexpected(response.error());
+    ;
 }
 
 // Creates (or updates) a playlist.
@@ -322,6 +340,37 @@ OSClient::createPlaylist(const std::string &playlistId, const std::string &name,
                                                          params, "playlist");
 
     // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Updates a playlist. Only the owner of a playlist is allowed to update it.
+std::expected<server::SubsonicResponse<server::Error>, server::Error>
+OSClient::updatePlaylist(
+    const std::string &playlistId, const std::string &name,
+    const std::string &comment, const std::string &isPublic,
+    const std::vector<std::string> &songIdToAdd,
+    const std::vector<std::string> &songIndexToRemove) const {
+
+    // make params
+    std::multimap<std::string, std::string> params{{"playlistId", playlistId},
+                                                   {"name", name},
+                                                   {"comment", comment},
+                                                   {"public", isPublic}};
+
+    // add songs
+    for (const auto &id : songIdToAdd)
+        params.insert({"songIdToAdd", id});
+
+    // songs to remove
+    for (const auto &index : songIndexToRemove)
+        params.insert({"songIndexToRemove", index});
+
+    auto response = get_req<server::SubsonicResponse<server::Error>>(
+        "updatePlaylist", params, "");
+
     if (response)
         return check(response.value());
     else

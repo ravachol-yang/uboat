@@ -40,9 +40,9 @@ see this [page](https://opensubsonic.netlify.app/docs/opensubsonic-api/) for Ope
 - [x] [search3](https://opensubsonic.netlify.app/docs/endpoints/search3/)
 ## Playlists
 - [x] [getPlaylists](https://opensubsonic.netlify.app/docs/endpoints/getplaylists)
-- [ ] [getPlaylist](https://opensubsonic.netlify.app/docs/endpoints/getplaylist)
+- [x] [getPlaylist](https://opensubsonic.netlify.app/docs/endpoints/getplaylist)
 - [x] [createPlaylist](https://opensubsonic.netlify.app/docs/endpoints/createplaylist)
-- [ ] [updatePlaylist](https://opensubsonic.netlify.app/docs/endpoints/updateplaylist)
+- [x] [updatePlaylist](https://opensubsonic.netlify.app/docs/endpoints/updateplaylist)
 - [x] [deletePlaylist](https://opensubsonic.netlify.app/docs/endpoints/deleteplaylist)
 ## Media annotation
 - [x] [star](https://opensubsonic.netlify.app/docs/endpoints/star/)

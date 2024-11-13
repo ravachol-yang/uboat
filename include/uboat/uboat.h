@@ -576,6 +576,15 @@ public:
     std::expected<playlist::Playlists, server::Error>
     getPlaylists(const std::string &username = "") const;
 
+    /// Returns a listing of files in a saved playlist.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getplaylist/
+    ///
+    /// \param id ID of the playlist to return, as obtained by getPlaylists.
+    ///
+    /// \return playlist with songs
+    std::expected<playlist::PlaylistWithSongs, server::Error>
+    getPlaylist(const std::string &id) const;
+
     /// Creates (or updates) a playlist.
     /// https://opensubsonic.netlify.app/docs/endpoints/createplaylist/
     ///
@@ -587,6 +596,25 @@ public:
     std::expected<playlist::PlaylistWithSongs, server::Error>
     createPlaylist(const std::string &playlistId, const std::string &name,
                    const std::vector<std::string> &songId = {}) const;
+
+    /// Updates a playlist. Only the owner of a playlist is allowed to update
+    /// it.
+    /// https://opensubsonic.netlify.app/docs/endpoints/updateplaylist/
+    ///
+    /// \param playlistId
+    /// \param name
+    /// \param comment
+    /// \param isPublic
+    /// \param songIdToAdd allow multiple
+    /// \param songIndexToRemove allow multiple
+    ///
+    /// \return empty response
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    updatePlaylist(
+        const std::string &playlistId, const std::string &name = "",
+        const std::string &comment = "", const std::string &isPublic = "",
+        const std::vector<std::string> &songIdToAdd = {},
+        const std::vector<std::string> &songIndexToRemove = {}) const;
 
     /// Deletes a saved playlist.
     /// https://opensubsonic.netlify.app/docs/endpoints/deleteplaylist/

@@ -25,8 +25,8 @@ TEST_SUITE("Playlists") {
 
     TEST_CASE("Playlist lifecycle") {
 
-        SUBCASE("createPlaylist") {
-            auto songResult = client.getRandomSongs("3");
+        SUBCASE("create get, and updatePlaylist") {
+            auto songResult = client.getRandomSongs("5");
             REQUIRE(songResult.has_value());
             auto songs = songResult.value().song;
 
@@ -35,12 +35,30 @@ TEST_SUITE("Playlists") {
             for (const auto &song : songs)
                 ids.emplace_back(song.id);
 
-            REQUIRE_EQ(ids.size(), 3);
+            REQUIRE_EQ(ids.size(), 5);
 
-            auto result = client.createPlaylist("", "testPlaylist", ids);
+            auto result = client.createPlaylist(
+                "", "testPlaylist", {ids.at(0), ids.at(1), ids.at(2)});
 
             CHECK(result.has_value());
             CHECK_EQ(result.value().songCount, 3);
+
+            auto getResult = client.getPlaylist(result.value().id);
+
+            CHECK(getResult.has_value());
+            CHECK_EQ(getResult.value().name, "testPlaylist");
+
+            auto update =
+                client.updatePlaylist(result.value().id, "updated", "", "",
+                                      {ids.at(3), ids.at(4)}, {"0"});
+
+            CHECK(update.has_value());
+
+            auto updateResult = client.getPlaylist(result.value().id);
+
+            CHECK(updateResult.has_value());
+            CHECK_EQ(updateResult.value().name, "updated");
+            CHECK_EQ(updateResult.value().entry.size(), 4);
         }
 
         SUBCASE("get and deletePlaylist") {
