@@ -145,7 +145,7 @@ std::expected<artist::ArtistInfo2, server::Error>
 OSClient::getArtistInfo2(const std::string &id, const std::string &count,
                          const std::string &includeNotPresent) const {
     // make params
-    std::map<std::string, std::string> params{
+    std::multimap<std::string, std::string> params{
         {"id", id}, {"count", count}, {"includeNotPresent", includeNotPresent}};
 
     auto response =
@@ -209,7 +209,7 @@ OSClient::getAlbumList2(const std::string &type, const std::string &size,
                         const std::string &genre) const {
 
     // make parameters
-    std::map<std::string, std::string> params{
+    std::multimap<std::string, std::string> params{
         {"type", type},         {"size", size},     {"offset", size},
         {"fromYear", fromYear}, {"toYear", toYear}, {"genre", genre}};
 
@@ -230,10 +230,10 @@ OSClient::getRandomSongs(const std::string &size, const std::string &genre,
                          const std::string &fromYear,
                          const std::string &toYear) const {
     // make params
-    std::map<std::string, std::string> params{{"size", size},
-                                              {"genre", genre},
-                                              {"fromYear", fromYear},
-                                              {"toYear", toYear}};
+    std::multimap<std::string, std::string> params{{"size", size},
+                                                   {"genre", genre},
+                                                   {"fromYear", fromYear},
+                                                   {"toYear", toYear}};
 
     auto response =
         get_req<media::RandomSongs>("getRandomSongs", params, "randomSongs");
@@ -268,17 +268,75 @@ OSClient::search3(const std::string &query, const std::string &artistCount,
                   const std::string &songCount, const std::string &songOffset,
                   const std::string &musicFolderId) const {
     // make params
-    std::map<std::string, std::string> params{{"query", query},
-                                              {"artistCount", artistCount},
-                                              {"artistOffset", artistOffset},
-                                              {"albumCount", albumCount},
-                                              {"albumOffset", albumOffset},
-                                              {"songCount", songCount},
-                                              {"songOffset", songOffset},
-                                              {"musicFolderId", musicFolderId}};
+    std::multimap<std::string, std::string> params{
+        {"query", query},
+        {"artistCount", artistCount},
+        {"artistOffset", artistOffset},
+        {"albumCount", albumCount},
+        {"albumOffset", albumOffset},
+        {"songCount", songCount},
+        {"songOffset", songOffset},
+        {"musicFolderId", musicFolderId}};
 
     auto response =
         get_req<search::SearchResult3>("search3", params, "searchResult3");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Playlists
+// Returns all playlists a user is allowed to play.
+std::expected<playlist::Playlists, server::Error>
+OSClient::getPlaylists(const std::string &username) const {
+
+    // make params
+    std::multimap<std::string, std::string> params{{"username", username}};
+
+    auto response =
+        get_req<playlist::Playlists>("getPlaylists", params, "playlists");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());;
+}
+
+// Creates (or updates) a playlist.
+std::expected<playlist::PlaylistWithSongs, server::Error>
+OSClient::createPlaylist(const std::string &playlistId, const std::string &name,
+                         const std::vector<std::string> &songId) const {
+    // make params
+    std::multimap<std::string, std::string> params{{"playlistId", playlistId},
+                                                   {"name", name}};
+
+    // add songs
+    for (const auto &id : songId)
+        params.insert({"songId", id});
+
+    auto response = get_req<playlist::PlaylistWithSongs>("createPlaylist",
+                                                         params, "playlist");
+
+    // extract data
+    if (response)
+        return check(response.value());
+    else
+        return std::unexpected(response.error());
+}
+
+// Deletes a saved playlist.
+std::expected<server::SubsonicResponse<server::Error>, server::Error>
+OSClient::deletePlaylist(const std::string &id) const {
+
+    // make params
+    std::multimap<std::string, std::string> params{{"id", id}};
+
+    auto response = get_req<server::SubsonicResponse<server::Error>>(
+        "deletePlaylist", params, "");
 
     // extract data
     if (response)
@@ -293,11 +351,11 @@ std::expected<server::SubsonicResponse<server::Error>, server::Error>
 OSClient::star(const std::string &id, const std::string &albumId,
                const std::string &artistId) const {
     // make params
-    std::map<std::string, std::string> params{
+    std::multimap<std::string, std::string> params{
         {"id", id}, {"albumId", albumId}, {"artistId", artistId}};
 
-    auto response = get_req<server::SubsonicResponse<server::Error>>(
-        "star", params, "error");
+    auto response =
+        get_req<server::SubsonicResponse<server::Error>>("star", params, "");
 
     // extract data
     if (response)
@@ -311,11 +369,11 @@ std::expected<server::SubsonicResponse<server::Error>, server::Error>
 OSClient::unstar(const std::string &id, const std::string &albumId,
                  const std::string &artistId) const {
     // make params
-    std::map<std::string, std::string> params{
+    std::multimap<std::string, std::string> params{
         {"id", id}, {"albumId", albumId}, {"artistId", artistId}};
 
-    auto response = get_req<server::SubsonicResponse<server::Error>>(
-        "unstar", params, "error");
+    auto response =
+        get_req<server::SubsonicResponse<server::Error>>("unstar", params, "");
 
     // extract data
     if (response)
@@ -329,10 +387,11 @@ std::expected<server::SubsonicResponse<server::Error>, server::Error>
 OSClient::setRating(const std::string &id, const std::string &rating) const {
 
     // make params
-    std::map<std::string, std::string> params{{"id", id}, {"rating", rating}};
+    std::multimap<std::string, std::string> params{{"id", id},
+                                                   {"rating", rating}};
 
     auto response = get_req<server::SubsonicResponse<server::Error>>(
-        "setRating", params, "error");
+        "setRating", params, "");
 
     // extract data
     if (response)
@@ -346,11 +405,11 @@ std::expected<server::SubsonicResponse<server::Error>, server::Error>
 OSClient::scrobble(const std::string &id, const std::string &time,
                    const std::string &submission) const {
     // make params
-    std::map<std::string, std::string> params{
+    std::multimap<std::string, std::string> params{
         {"id", id}, {"time", time}, {"submission", submission}};
 
     auto response = get_req<server::SubsonicResponse<server::Error>>(
-        "scrobble", params, "error");
+        "scrobble", params, "");
 
     // extract data
     if (response)
@@ -364,7 +423,7 @@ OSClient::scrobble(const std::string &id, const std::string &time,
 template <class Data>
 std::expected<server::SubsonicResponse<Data>, server::Error>
 OSClient::get_req(const std::string &endpoint,
-                  const std::map<std::string, std::string> &params,
+                  const std::multimap<std::string, std::string> &params,
                   const std::string &key) const {
 
     // basic request params required by every endpoint
@@ -625,6 +684,31 @@ void from_json(const nlohmann::json &j, AlbumList2 &a) {
     set_if_contains(j, "album", a.album);
 }
 } // namespace uboat::album
+
+namespace uboat::playlist {
+void from_json(const nlohmann::json &j, Playlist &p) {
+    j.at("id").get_to(p.id);
+    j.at("name").get_to(p.name);
+    set_if_contains(j, "comment", p.comment);
+    set_if_contains(j, "owner", p.owner);
+    set_if_contains(j, "public", p.isPublic);
+    j.at("songCount").get_to(p.songCount);
+    j.at("duration").get_to(p.duration);
+    j.at("created").get_to(p.created);
+    j.at("changed").get_to(p.changed);
+    set_if_contains(j, "coverArt", p.coverArt);
+    set_if_contains(j, "allowedUser", p.allowedUser);
+}
+
+void from_json(const nlohmann::json &j, Playlists &p) {
+    set_if_contains(j, "playlist", p.playlist);
+}
+
+void from_json(const nlohmann::json &j, PlaylistWithSongs &p) {
+    from_json(j, static_cast<Playlist &>(p));
+    set_if_contains(j, "entry", p.entry);
+}
+} // namespace uboat::playlist
 
 namespace uboat::search {
 

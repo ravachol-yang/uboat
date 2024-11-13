@@ -304,6 +304,31 @@ void from_json(const nlohmann::json &j, AlbumID3WithSongs &a);
 void from_json(const nlohmann::json &j, AlbumList2 &a);
 } // namespace album
 
+namespace playlist {
+/// https://opensubsonic.netlify.app/docs/responses/playlist/
+struct Playlist {
+    std::string id;
+    std::string name;
+    std::string comment;
+    std::string owner;
+    bool isPublic;
+    std::size_t songCount;
+    std::size_t duration;
+    std::string created;
+    std::string changed;
+    std::string coverArt;
+    std::vector<std::string> allowedUser;
+};
+/// https://opensubsonic.netlify.app/docs/responses/playlists/
+struct Playlists {
+    std::vector<Playlist> playlist;
+};
+/// https://opensubsonic.netlify.app/docs/responses/playlistwithsongs/
+struct PlaylistWithSongs : public Playlist {
+    std::vector<media::Child> entry;
+};
+} // namespace playlist
+
 namespace search {
 // search3 result.
 // https://opensubsonic.netlify.app/docs/responses/searchresult3/
@@ -315,7 +340,6 @@ struct SearchResult3 {
 } // namespace search
 
 namespace server {
-
 /// Error
 /// https://opensubsonic.netlify.app/docs/responses/error/
 struct Error {
@@ -539,16 +563,49 @@ public:
         const std::string &songCount = "", const std::string &songOffset = "",
         const std::string &musicFolderId = "") const;
 
+    // Playlists
+
+    /// Returns all playlists a user is allowed to play.
+    /// https://opensubsonic.netlify.app/docs/endpoints/getplaylists/
+    ///
+    /// \param username If specified, return playlists for this user rather than
+    /// for the authenticated user. The authenticated user must have admin role
+    /// if this parameter is used.
+    ///
+    /// \return playlists
+    std::expected<playlist::Playlists, server::Error>
+    getPlaylists(const std::string &username = "") const;
+
+    /// Creates (or updates) a playlist.
+    /// https://opensubsonic.netlify.app/docs/endpoints/createplaylist/
+    ///
+    /// \param playlistId The playlist ID.required if updating
+    /// \param name The human-readable name of the playlist.required id creating
+    /// \param songId ID of a song in the playlist.
+    ///
+    /// \return playlist with songs
+    std::expected<playlist::PlaylistWithSongs, server::Error>
+    createPlaylist(const std::string &playlistId, const std::string &name,
+                   const std::vector<std::string> &songId = {}) const;
+
+    /// Deletes a saved playlist.
+    /// https://opensubsonic.netlify.app/docs/endpoints/deleteplaylist/
+    ///
+    /// \param id ID of the playlist to delete, as obtained by getPlaylists.
+    /// \return empty response
+    std::expected<server::SubsonicResponse<server::Error>, server::Error>
+    deletePlaylist(const std::string &id) const;
+
     // Media annotation
 
     /// Attaches a star to a song, album or artist.
     /// https://opensubsonic.netlify.app/docs/endpoints/star/
     ///
-    /// \param id The ID of the file (song) or folder (album/artist) to star.
-    /// Multiple parameters allowed. \param albumId The ID of an album to star.
-    /// Use this rather than id if the client accesses the media collection
-    /// according to ID3 tags rather than file structure. Multiple parameters
-    /// allowed.
+    /// \param id The ID of the file (song) or folder (album/artist) to
+    /// star. Multiple parameters allowed. \param albumId The ID of an album
+    /// to star. Use this rather than id if the client accesses the media
+    /// collection according to ID3 tags rather than file structure.
+    /// Multiple parameters allowed.
     ///
     /// \param artistId The ID of an artist to star
     ///
@@ -613,7 +670,7 @@ private:
     template <class Data>
     std::expected<server::SubsonicResponse<Data>, server::Error>
     get_req(const std::string &endpoint,
-            const std::map<std::string, std::string> &params,
+            const std::multimap<std::string, std::string> &params,
             const std::string &key) const;
 
     /// check the response data
